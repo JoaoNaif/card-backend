@@ -1,0 +1,71 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id    String @id @default(cuid())
+  email String @unique
+  name  String
+
+  createdAt  DateTime    @default(now())
+  characters Character[]
+}
+
+model Power {
+  id String @id @default(cuid())
+
+  name        String
+  description String
+
+  createdAt  DateTime    @default(now())
+  skills     Skill[]
+  characters Character[]
+}
+
+model Skill {
+  id String @id @default(cuid())
+
+  name        String
+  description String
+  limitation  String
+  cost        String
+  powerId     String
+  power       Power  @relation(fields: [powerId], references: [id])
+
+  createdAt DateTime @default(now())
+}
+
+enum Ranking {
+  MORTAL
+  DESBRAVADOR
+  HEROI
+  EPICO
+  LENDARIO
+  MITICO
+  ANCESTRAL
+}
+
+model Character {
+  id          String  @id @default(cuid())
+  name        String
+  description String
+  userId      String?
+  ranking     Ranking
+  powerId     String
+
+  power Power @relation(fields: [powerId], references: [id])
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
