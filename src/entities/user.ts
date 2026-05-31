@@ -5,6 +5,7 @@ import type { Optional } from "../core/type/optional"
 export interface UserProps {
     email: string
     name: string
+    passwordHash: string
     createdAt: Date
 }
 
@@ -15,6 +16,10 @@ export class User extends Entity<UserProps> {
 
     get name() {
         return this.props.name
+    }
+
+    get passwordHash() {
+        return this.props.passwordHash
     }
 
     get createdAt() {

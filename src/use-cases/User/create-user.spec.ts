@@ -1,20 +1,24 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { CreateUserUseCase } from './create-user'
 import { InMemoryUserRepository } from '../../repositories/test/in-memory-user-repository'
+import { BcryptHasher } from '../../repositories/cryptography/bcrypt-hasher'
 
 let userRepository: InMemoryUserRepository
+let hashGenerator: BcryptHasher
 let sut: CreateUserUseCase
 
 describe('CreateUserUseCase', () => {
   beforeEach(() => {
     userRepository = new InMemoryUserRepository()
-    sut = new CreateUserUseCase(userRepository)
+    hashGenerator = new BcryptHasher()
+    sut = new CreateUserUseCase(userRepository, hashGenerator)
   })
 
   it('should create a user successfully', async () => {
     const result = await sut.execute({
       name: 'John Doe',
       email: 'john@example.com',
+      password: '123456',
     })
 
     expect(result.isRight()).toBe(true)
@@ -28,12 +32,24 @@ describe('CreateUserUseCase', () => {
     }
   })
 
+  it('should hash the password before saving', async () => {
+    await sut.execute({
+      name: 'John Doe',
+      email: 'john@example.com',
+      password: '123456',
+    })
+
+    const stored = userRepository.items[0]!
+    expect(stored.passwordHash).not.toBe('123456')
+  })
+
   it('should return an error when email is already in use', async () => {
-    await sut.execute({ name: 'John Doe', email: 'john@example.com' })
+    await sut.execute({ name: 'John Doe', email: 'john@example.com', password: '123456' })
 
     const result = await sut.execute({
       name: 'Other User',
       email: 'john@example.com',
+      password: '123456',
     })
 
     expect(result.isLeft()).toBe(true)
@@ -41,7 +57,7 @@ describe('CreateUserUseCase', () => {
   })
 
   it('should persist the user in the repository', async () => {
-    await sut.execute({ name: 'Jane Doe', email: 'jane@example.com' })
+    await sut.execute({ name: 'Jane Doe', email: 'jane@example.com', password: '123456' })
 
     const stored = await userRepository.findByEmail('jane@example.com')
 

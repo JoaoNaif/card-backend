@@ -15,7 +15,7 @@ describe('POST /users (CreateUserController)', () => {
   it('should create a user and return 201 with user data', async () => {
     const response = await request(app)
       .post('/users')
-      .send({ name: 'John Doe', email: 'john@example.com' })
+      .send({ name: 'John Doe', email: 'john@example.com', password: '123456' })
 
     expect(response.status).toBe(201)
     expect(response.body).toMatchObject({
@@ -29,11 +29,11 @@ describe('POST /users (CreateUserController)', () => {
   it('should return 409 when email is already in use', async () => {
     await request(app)
       .post('/users')
-      .send({ name: 'John Doe', email: 'john@example.com' })
+      .send({ name: 'John Doe', email: 'john@example.com', password: '123456' })
 
     const response = await request(app)
       .post('/users')
-      .send({ name: 'Other User', email: 'john@example.com' })
+      .send({ name: 'Other User', email: 'john@example.com', password: '123456' })
 
     expect(response.status).toBe(409)
     expect(response.body.message).toBeDefined()
@@ -51,7 +51,7 @@ describe('POST /users (CreateUserController)', () => {
   it('should return 400 when email format is invalid', async () => {
     const response = await request(app)
       .post('/users')
-      .send({ name: 'John Doe', email: 'not-an-email' })
+      .send({ name: 'John Doe', email: 'not-an-email', password: '123456' })
 
     expect(response.status).toBe(400)
     expect(response.body.errors.email).toBeDefined()

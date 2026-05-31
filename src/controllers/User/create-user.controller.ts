@@ -6,6 +6,7 @@ import { zodValidationPipe } from '../_pipe/zod-validation-pipe'
 export const createUserBodySchema = z.object({
   name: z.string(),
   email: z.email(),
+  password: z.string().min(6),
 })
 
 const validateBody = zodValidationPipe(createUserBodySchema)
@@ -16,9 +17,9 @@ export class CreateUserController {
   handle = [
     validateBody,
     async (req: Request, res: Response): Promise<void> => {
-      const { name, email } = req.body
+      const { name, email, password } = req.body
 
-      const result = await this.createUserUseCase.execute({ name, email })
+      const result = await this.createUserUseCase.execute({ name, email, password })
 
       if (result.isLeft()) {
         res.status(409).json({ message: result.value.message })
