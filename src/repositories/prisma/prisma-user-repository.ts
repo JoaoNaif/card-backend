@@ -1,36 +1,37 @@
-import type { Prisma, User } from '../../generated/prisma';
-import type { IUserRepository } from '../interface/user-repository';
-import { prisma } from '../../config/prisma';
+import type { IUserRepository } from '../interface/user-repository'
+import { prisma } from '../../config/prisma'
+import type { User } from '../../entities/user'
+import { PrismaUserMapper } from './mappers/prisma-user-mapper'
 
 export class PrismaUserRepository implements IUserRepository {
-    async create(data: Prisma.UserCreateInput): Promise<User> {
-        return await prisma.user.create({ data });
-    }
+  async create(user: User): Promise<void> {
+    const data = PrismaUserMapper.toPrisma(user)
 
-    async save(user: Prisma.UserUpdateInput): Promise<void> {
-        const id = user.id as string;
-        await prisma.user.update({
-            where: { id },
-            data: user,
-        });
-    }
+    await prisma.user.create({
+      data,
+    })
+  }
 
-    async delete(user: Prisma.UserUpdateInput): Promise<void> {
-        const id = user.id as string;
-        await prisma.user.delete({
-            where: { id },
-        });
-    }
+  async save(user: User): Promise<void> {
+    const id = user.id.toString()
+    await prisma.user.update({
+      where: { id },
+      data: PrismaUserMapper.toPrismaUpdate(user),
+    })
+  }
 
-    async findById(id: string): Promise<User | null> {
-        return await prisma.user.findUnique({
-            where: { id },
-        });
-    }
+  async delete(user: User): Promise<void> {
+    const id = user.id.toString()
+    await prisma.user.delete({ where: { id } })
+  }
 
-    async findByEmail(email: string): Promise<User | null> {
-        return await prisma.user.findUnique({
-            where: { email },
-        });
-    }
+  async findById(id: string): Promise<User | null> {
+    const user = await prisma.user.findUnique({ where: { id } })
+    return user ? PrismaUserMapper.toDomain(user) : null
+  }
+
+  async findByEmail(email: string): Promise<User | null> {
+    const user = await prisma.user.findUnique({ where: { email } })
+    return user ? PrismaUserMapper.toDomain(user) : null
+  }
 }

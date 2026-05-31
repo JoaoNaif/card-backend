@@ -1,0 +1,7 @@
+import type { UseCaseError } from "../use-case-error";
+
+export class ResourceNotFoundError extends Error implements UseCaseError {
+  constructor(indentifier: string) {
+    super(`${indentifier} resource not found`)
+  }
+}
