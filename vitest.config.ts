@@ -33,5 +33,6 @@ export default defineConfig({
     include: ['src/**/*.spec.ts'],
     env: parseEnvFile('.env.test'),
     globalSetup: ['src/test/setup/global-setup.ts'],
+    fileParallelism: false,
   },
 })
