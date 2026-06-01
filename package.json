@@ -7,7 +7,10 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "start": "node dist/server.js",
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch src/server.ts",
+    "db:migrate": "prisma migrate dev",
+    "db:reset": "prisma migrate reset --force",
+    "db:generate": "prisma generate"
   },
   "keywords": [],
   "author": "",
