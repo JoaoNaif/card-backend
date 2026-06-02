@@ -5,11 +5,7 @@ export class GetUserController {
   constructor(private getUserUseCase: GetUserUseCase) {}
 
   async handle(req: Request, res: Response): Promise<Response> {
-    const id = req.params.id as string
-
-    if (!id) {
-      return res.status(400).json({ message: 'Missing id param.' })
-    }
+    const id = req.user!.sub
 
     const result = await this.getUserUseCase.execute({ id })
 
