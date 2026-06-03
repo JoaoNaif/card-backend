@@ -1,8 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -17,41 +15,6 @@ enum UserRole {
   USER
 }
 
-model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  name         String
-  passwordHash String
-  userRole     UserRole @default(USER)
-
-  createdAt  DateTime    @default(now())
-  characters Character[]
-}
-
-model Power {
-  id String @id @default(cuid())
-
-  name        String
-  description String
-
-  createdAt  DateTime    @default(now())
-  skills     Skill[]
-  characters Character[]
-}
-
-model Skill {
-  id String @id @default(cuid())
-
-  name        String
-  description String
-  limitation  String
-  cost        String
-  powerId     String
-  power       Power  @relation(fields: [powerId], references: [id])
-
-  createdAt DateTime @default(now())
-}
-
 enum Ranking {
   MORTAL
   DESBRAVADOR
@@ -62,17 +25,80 @@ enum Ranking {
   ANCESTRAL
 }
 
-model Character {
-  id          String  @id @default(cuid())
+model User {
+  id           String      @id @default(cuid())
+  email        String      @unique
+  name         String
+  passwordHash String
+  userRole     UserRole    @default(USER)
+  characters   Character[]
+  createdAt    DateTime    @default(now())
+}
+
+model Trait {
+  id          String      @id @default(cuid())
+  name        String      @unique
+  description String
+  characters  Character[]
+  skills      Skill[]
+  createdAt   DateTime    @default(now())
+}
+
+model Power {
+  id          String      @id @default(cuid())
   name        String
   description String
-  userId      String?
-  ranking     Ranking
-  powerId     String
+  skills      Skill[]
+  characters  Character[]
+  createdAt   DateTime    @default(now())
+}
 
-  power Power @relation(fields: [powerId], references: [id])
+model Skill {
+  id             String           @id @default(cuid())
+  name           String
+  description    String
+  limitation     String
+  cost           Int
+  minLevel       Int
+  powerId        String
+  power          Power            @relation(fields: [powerId], references: [id])
+  requiredTraits Trait[]
+  characters     CharacterSkill[]
+  createdAt      DateTime         @default(now())
+}
 
-  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+model Character {
+  id                   String           @id @default(cuid())
+  name                 String
+  description          String
+  userId               String?
 
-  createdAt DateTime @default(now())
+  ranking              Ranking          @default(MORTAL)
+  maxRanking           Ranking
+  level                Int              @default(1)
+  xp                   Int              @default(0)
+  breakthroughAttempts Int              @default(0)
+
+  baseHp               Int
+  baseAtk              Int
+  baseDef              Int
+  baseSpd              Int
+
+  powerId              String
+  power                Power            @relation(fields: [powerId], references: [id])
+  user                 User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  traits               Trait[]
+  skills               CharacterSkill[]
+
+  createdAt            DateTime         @default(now())
+}
+
+model CharacterSkill {
+  characterId String
+  skillId     String
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  skill       Skill     @relation(fields: [skillId], references: [id])
+  assignedAt  DateTime  @default(now())
+
+  @@id([characterId, skillId])
 }
