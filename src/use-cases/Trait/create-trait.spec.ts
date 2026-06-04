@@ -1,6 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { InMemoryUserRepository } from '../../repositories/test/in-memory-user-repository'
-import { BcryptHasher } from '../../repositories/cryptography/bcrypt-hasher'
 import { CreateTraitUseCase } from './create-trait'
 import { InMemoryTraitRepository } from '../../repositories/test/in-memory-trait-repository'
 import { makeUser } from '../../repositories/test/factories/make-user'

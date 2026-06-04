@@ -6,4 +6,5 @@ export interface ITraitRepository {
   delete(trait: Trait): Promise<void>
   findById(id: string): Promise<Trait | null>
   findByName(name: string): Promise<Trait | null>
+  findAll(search: string, page: number, limit: number): Promise<Trait[]>
 }

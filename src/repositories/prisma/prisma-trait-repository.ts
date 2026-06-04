@@ -50,4 +50,18 @@ export class PrismaTraitRepository implements ITraitRepository {
 
     return PrismaTraitMapper.toDomain(data)
   }
+
+  async findAll(
+    search: string = '',
+    page: number = 1,
+    limit: number = 10
+  ): Promise<Trait[]> {
+    const data = await prisma.trait.findMany({
+      where: { name: { contains: search } },
+      take: limit,
+      skip: (page - 1) * limit,
+    })
+
+    return data.map(PrismaTraitMapper.toDomain)
+  }
 }

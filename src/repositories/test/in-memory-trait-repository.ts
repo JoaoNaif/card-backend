@@ -26,4 +26,11 @@ export class InMemoryTraitRepository implements ITraitRepository {
   async findByName(name: string): Promise<Trait | null> {
     return this.items.find((t) => t.name === name) || null
   }
+
+  async findAll(search: string, page: number, limit: number): Promise<Trait[]> {
+    const start = (page - 1) * limit
+    const end = start + limit
+
+    return this.items.filter((t) => t.name.includes(search)).slice(start, end)
+  }
 }
