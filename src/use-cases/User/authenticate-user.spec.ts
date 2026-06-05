@@ -21,10 +21,12 @@ describe('AuthenticateUserUseCase', () => {
   })
 
   it('should authenticate a user successfully', async () => {
-    const user = makeUser({
-      email: 'john@example.com',
-      passwordHash: await hashGenerator.hash('123456'),
-    })
+    userRepository.items.push(
+      makeUser({
+        email: 'john@example.com',
+        passwordHash: await hashGenerator.hash('123456'),
+      }),
+    )
 
     const result = await sut.execute({
       email: 'john@example.com',
@@ -35,17 +37,19 @@ describe('AuthenticateUserUseCase', () => {
     expect(userRepository.items).toHaveLength(1)
 
     if (result.isRight()) {
-      expect(result.value).toBe({
-        acessToken: expect.any(String),
+      expect(result.value).toEqual({
+        accessToken: expect.any(String),
       })
     }
   })
 
   it('should not be able to authenticate with invalid credentials', async () => {
-    const user = makeUser({
-      email: 'john@example.com',
-      passwordHash: await hashGenerator.hash('123456'),
-    })
+    userRepository.items.push(
+      makeUser({
+        email: 'john@example.com',
+        passwordHash: await hashGenerator.hash('123456'),
+      }),
+    )
 
     const result = await sut.execute({
       email: 'john@example.com',
