@@ -20,7 +20,7 @@ type CreateUserUseCaseResponse = Either<
 export class CreateUserUseCase {
   constructor(
     private userRepository: IUserRepository,
-    private hashGenerator: HashGenerator,
+    private hashGenerator: HashGenerator
   ) {}
 
   async execute({

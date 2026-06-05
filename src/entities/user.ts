@@ -27,6 +27,10 @@ export class User extends Entity<UserProps> {
     return this.props.passwordHash
   }
 
+  get userRole() {
+    return this.props.userRole
+  }
+
   get createdAt() {
     return this.props.createdAt
   }

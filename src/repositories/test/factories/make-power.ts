@@ -1,12 +1,12 @@
 import { faker } from '@faker-js/faker'
 import type { UniqueEntityId } from '../../../core/entities/unique-entity-id'
-import { Trait, type TraitProps } from '../../../entities/trait'
+import { Power, type PowerProps } from '../../../entities/power'
 
-export function makeTrait(
-  override: Partial<TraitProps> = {},
+export function makePower(
+  override: Partial<PowerProps> = {},
   id?: UniqueEntityId
 ) {
-  const trait = Trait.create(
+  const power = Power.create(
     {
       name: faker.person.fullName(),
       description: faker.lorem.paragraph(),
@@ -14,5 +14,5 @@ export function makeTrait(
     },
     id
   )
-  return trait
+  return power
 }

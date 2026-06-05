@@ -1,46 +1,63 @@
-import type { Power, Prisma } from '../../generated/prisma';
-import type { IPowerRepository } from '../interface/power-repository';
-import { prisma } from '../../config/prisma';
+import { prisma } from '../../config/prisma'
+import type { Power } from '../../entities/power'
+import type { IPowerRepository } from '../interface/power-repository'
+import { PrismaPowerMapper } from './mappers/prisma-power-mapper'
 
 export class PrismaPowerRepository implements IPowerRepository {
-    async create(data: Prisma.PowerCreateInput): Promise<Power> {
-        return await prisma.power.create({
-            data
-        });
+  async findByName(name: string): Promise<Power | null> {
+    const data = await prisma.power.findUnique({
+      where: { name },
+    })
+
+    if (!data) {
+      return null
     }
 
-    async findByName(name: string): Promise<Power | null> {
-        return await prisma.power.findFirst({
-            where: { name },
-        });
+    return PrismaPowerMapper.toDomain(data)
+  }
+
+  async findById(id: string): Promise<Power | null> {
+    const data = await prisma.power.findUnique({
+      where: { id },
+    })
+
+    if (!data) {
+      return null
     }
 
-    async findById(id: string): Promise<Power | null> {
-        return await prisma.power.findUnique({
-            where: { id },
-        });
-    }
+    return PrismaPowerMapper.toDomain(data)
+  }
 
-    async findAll(search: string = '', page: number = 1, limit: number = 10): Promise<Power[]> {
-        return await prisma.power.findMany({
-            where: { name: { contains: search } },
-            take: limit,
-            skip: (page - 1) * limit,
-        });
-    }
+  async findAll(search: string, page: number, limit: number): Promise<Power[]> {
+    const data = await prisma.power.findMany({
+      where: { name: { contains: search } },
+      take: limit,
+      skip: (page - 1) * limit,
+    })
 
-    async save(data: Prisma.PowerUpdateInput): Promise<Power> {
-        const id = data.id as string;
-        return await prisma.power.update({
-            where: { id },
-            data,
-        });
-    }
+    return data.map(PrismaPowerMapper.toDomain)
+  }
 
-    async delete(data: Prisma.PowerUpdateInput): Promise<void> {
-        const id = data.id as string;
-        await prisma.power.delete({
-            where: { id },
-        });
-    }
+  async create(power: Power): Promise<void> {
+    const data = PrismaPowerMapper.toPrisma(power)
+
+    await prisma.power.create({
+      data,
+    })
+  }
+
+  async save(power: Power): Promise<void> {
+    const id = power.id.toString()
+    await prisma.power.update({
+      where: { id },
+      data: PrismaPowerMapper.toPrismaUpdate(power),
+    })
+  }
+
+  async delete(power: Power): Promise<void> {
+    const id = power.id.toString()
+    await prisma.power.delete({
+      where: { id },
+    })
+  }
 }

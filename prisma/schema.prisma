@@ -46,7 +46,7 @@ model Trait {
 
 model Power {
   id          String      @id @default(cuid())
-  name        String
+  name        String      @unique
   description String
   skills      Skill[]
   characters  Character[]
@@ -68,29 +68,29 @@ model Skill {
 }
 
 model Character {
-  id                   String           @id @default(cuid())
-  name                 String
-  description          String
-  userId               String?
+  id          String  @id @default(cuid())
+  name        String
+  description String
+  userId      String?
 
-  ranking              Ranking          @default(MORTAL)
+  ranking              Ranking @default(MORTAL)
   maxRanking           Ranking
-  level                Int              @default(1)
-  xp                   Int              @default(0)
-  breakthroughAttempts Int              @default(0)
+  level                Int     @default(1)
+  xp                   Int     @default(0)
+  breakthroughAttempts Int     @default(0)
 
-  baseHp               Int
-  baseAtk              Int
-  baseDef              Int
-  baseSpd              Int
+  baseHp  Int
+  baseAtk Int
+  baseDef Int
+  baseSpd Int
 
-  powerId              String
-  power                Power            @relation(fields: [powerId], references: [id])
-  user                 User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  traits               Trait[]
-  skills               CharacterSkill[]
+  powerId String
+  power   Power            @relation(fields: [powerId], references: [id])
+  user    User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  traits  Trait[]
+  skills  CharacterSkill[]
 
-  createdAt            DateTime         @default(now())
+  createdAt DateTime @default(now())
 }
 
 model CharacterSkill {
