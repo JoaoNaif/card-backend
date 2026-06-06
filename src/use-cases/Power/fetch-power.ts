@@ -26,11 +26,11 @@ export class FetchPowerUseCase {
     const powers = await this.powerRepository.findAll(search, page, limit)
 
     return right({
-      powers: powers.map((trait) => ({
-        id: trait.id.toString(),
-        name: trait.name,
-        description: trait.description,
-        createdAt: trait.createdAt,
+      powers: powers.map((power) => ({
+        id: power.id.toString(),
+        name: power.name,
+        description: power.description,
+        createdAt: power.createdAt,
       })),
     })
   }
