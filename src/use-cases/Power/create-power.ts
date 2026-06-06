@@ -59,7 +59,7 @@ export class CreatePowerUseCase {
         id: power.id.toString(),
         name: power.name,
         description: power.description,
-        createAt: power.createdAt,
+        createdAt: power.createdAt,
       },
     })
   }

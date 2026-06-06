@@ -1,28 +1,37 @@
-import type { Power } from "../../generated/prisma"
-import type { IPowerRepository } from "../../repositories/interface/power-repository"
+import { right, type Either } from '../../core/either'
+import type { IPowerRepository } from '../../repositories/interface/power-repository'
+import type { DtoPowerRaw } from './dtos/dto-power-raw'
 
-interface FetchPowerRequest {
-    search: string
-    page: number
-    limit: number
+interface FetchPowerUseCaseRequest {
+  search: string
+  page: number
+  limit: number
 }
 
-interface FetchPowerResponse {
-    powers: Power[]
-}
+type FetchPowerUseCaseResponse = Either<
+  null,
+  {
+    powers: DtoPowerRaw[]
+  }
+>
 
 export class FetchPowerUseCase {
-    constructor(private powerRepository: IPowerRepository) { }
+  constructor(private powerRepository: IPowerRepository) {}
 
-    async execute(request: FetchPowerRequest): Promise<FetchPowerResponse> {
-        const { search, page, limit } = request
+  async execute({
+    limit,
+    page,
+    search,
+  }: FetchPowerUseCaseRequest): Promise<FetchPowerUseCaseResponse> {
+    const powers = await this.powerRepository.findAll(search, page, limit)
 
-        const powers = await this.powerRepository.findAll(
-            search,
-            page,
-            limit
-        )
-
-        return { powers }
-    }
+    return right({
+      powers: powers.map((trait) => ({
+        id: trait.id.toString(),
+        name: trait.name,
+        description: trait.description,
+        createdAt: trait.createdAt,
+      })),
+    })
+  }
 }

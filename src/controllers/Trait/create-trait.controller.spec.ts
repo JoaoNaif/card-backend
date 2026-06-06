@@ -3,9 +3,9 @@ import request from 'supertest'
 import app from '../../app'
 import { prisma } from '../../config/prisma'
 
-describe('POST /powers (CreatePowerController)', () => {
+describe('POST /traits (CreateTraitController)', () => {
   afterEach(async () => {
-    await prisma.power.deleteMany()
+    await prisma.trait.deleteMany()
     await prisma.user.deleteMany()
   })
 
@@ -46,34 +46,32 @@ describe('POST /powers (CreatePowerController)', () => {
     return authResponse.headers['set-cookie'] as unknown as string[]
   }
 
-  it('should create a power and return 201 when admin is authenticated', async () => {
+  it('should create a trait and return 201 when admin is authenticated', async () => {
     const cookie = await createAdminAndGetCookie()
 
     const response = await request(app)
-      .post('/powers')
+      .post('/traits')
       .set('Cookie', cookie)
-      .send({ name: 'Fire', description: 'Fire-based attacks' })
+      .send({ name: 'Brave', description: 'A brave trait' })
 
     expect(response.status).toBe(201)
     expect(response.body).toMatchObject({
       id: expect.any(String),
-      name: 'Fire',
-      description: 'Fire-based attacks',
+      name: 'Brave',
+      description: 'A brave trait',
       createdAt: expect.any(String),
     })
   })
 
-  it('should return 400 when power name already exists', async () => {
+  it('should return 400 when trait name already exists', async () => {
     const cookie = await createAdminAndGetCookie()
 
-    await prisma.power.create({
-      data: { name: 'Fire', description: 'Fire-based attacks' },
-    })
+    await prisma.trait.create({ data: { name: 'Brave', description: 'A brave trait' } })
 
     const response = await request(app)
-      .post('/powers')
+      .post('/traits')
       .set('Cookie', cookie)
-      .send({ name: 'Fire', description: 'Another fire power' })
+      .send({ name: 'Brave', description: 'Another brave trait' })
 
     expect(response.status).toBe(400)
     expect(response.body.message).toBeDefined()
@@ -83,9 +81,9 @@ describe('POST /powers (CreatePowerController)', () => {
     const cookie = await createUserAndGetCookie()
 
     const response = await request(app)
-      .post('/powers')
+      .post('/traits')
       .set('Cookie', cookie)
-      .send({ name: 'Ice', description: 'Ice-based attacks' })
+      .send({ name: 'Cunning', description: 'A cunning trait' })
 
     expect(response.status).toBe(400)
     expect(response.body.message).toBeDefined()
@@ -93,8 +91,8 @@ describe('POST /powers (CreatePowerController)', () => {
 
   it('should return 401 when not authenticated', async () => {
     const response = await request(app)
-      .post('/powers')
-      .send({ name: 'Fire', description: 'Fire-based attacks' })
+      .post('/traits')
+      .send({ name: 'Brave', description: 'A brave trait' })
 
     expect(response.status).toBe(401)
     expect(response.body.message).toBeDefined()
@@ -104,9 +102,9 @@ describe('POST /powers (CreatePowerController)', () => {
     const cookie = await createAdminAndGetCookie()
 
     const response = await request(app)
-      .post('/powers')
+      .post('/traits')
       .set('Cookie', cookie)
-      .send({ name: 'Fire' })
+      .send({ name: 'Brave' })
 
     expect(response.status).toBe(400)
     expect(response.body.errors).toBeDefined()

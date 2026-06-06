@@ -1,6 +1,5 @@
 import { left, right, type Either } from '../../core/either'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
-import { UnauthorizedError } from '../../core/error/err/unauthorized-error'
 import type { ITraitRepository } from '../../repositories/interface/trait-repository'
 import type { IUserRepository } from '../../repositories/interface/user-repository'
 import type { DtoTraitRaw } from './dtos/dto-trait-raw'
