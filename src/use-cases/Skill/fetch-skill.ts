@@ -1,28 +1,41 @@
-import type { Skill } from "../../generated/prisma"
-import type { ISkillRepository } from "../../repositories/interface/skill-repository"
+import { right, type Either } from '../../core/either'
+import type { ISkillRepository } from '../../repositories/interface/skill-repository'
+import type { DtoSkillRaw } from './dtos/dto-skill-raw'
 
-interface FetchSkillRequest {
-    search: string
-    page: number
-    limit: number
+interface FetchSkillUseCaseRequest {
+  search: string
+  page: number
+  limit: number
 }
 
-interface FetchSkillResponse {
-    skill: Skill[]
-}
+type FetchSkillUseCaseResponse = Either<
+  null,
+  {
+    skills: DtoSkillRaw[]
+  }
+>
 
 export class FetchSkillUseCase {
-    constructor(private skillRepository: ISkillRepository) { }
+  constructor(private skillRepository: ISkillRepository) {}
 
-    async execute(request: FetchSkillRequest): Promise<FetchSkillResponse> {
-        const { search, page, limit } = request
+  async execute({
+    limit,
+    page,
+    search,
+  }: FetchSkillUseCaseRequest): Promise<FetchSkillUseCaseResponse> {
+    const skills = await this.skillRepository.findAll(search, page, limit)
 
-        const skills = await this.skillRepository.findAll(
-            search,
-            page,
-            limit
-        )
-
-        return { skill: skills }
-    }
+    return right({
+      skills: skills.map((skill) => ({
+        id: skill.id.toString(),
+        name: skill.name,
+        description: skill.description,
+        cost: skill.cost,
+        limitation: skill.limitation,
+        minLevel: skill.minLevel,
+        powerId: skill.powerId,
+        createdAt: skill.createdAt,
+      })),
+    })
+  }
 }

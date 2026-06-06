@@ -1,7 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { InMemoryTraitRepository } from '../../repositories/test/in-memory-trait-repository'
 import { FetchPowerUseCase } from './fetch-power'
-import type { InMemoryPowerRepository } from '../../repositories/test/in-memory-power-repository'
+import { InMemoryPowerRepository } from '../../repositories/test/in-memory-power-repository'
 import { makePower } from '../../repositories/test/factories/make-power'
 
 let powerRepository: InMemoryPowerRepository
@@ -9,7 +8,7 @@ let sut: FetchPowerUseCase
 
 describe('FetchPowerUseCase', () => {
   beforeEach(() => {
-    powerRepository = new InMemoryTraitRepository()
+    powerRepository = new InMemoryPowerRepository()
     sut = new FetchPowerUseCase(powerRepository)
   })
 
