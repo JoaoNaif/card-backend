@@ -1,10 +1,10 @@
-import type { Character, Prisma } from "../../generated/prisma"
+import type { Character } from '../../entities/character'
 
 export interface ICharacterRepository {
-    findByName(name: string): Promise<Character | null>
-    findById(id: string): Promise<Character | null>
-    findAll(search?: string, page?: number, limit?: number): Promise<Character[]>
-    create(data: Prisma.CharacterUncheckedCreateInput): Promise<Character>
-    save(data: Prisma.CharacterUpdateInput): Promise<Character>
-    delete(data: Prisma.CharacterUpdateInput): Promise<void>
+  create(character: Character): Promise<void>
+  save(character: Character): Promise<void>
+  delete(character: Character): Promise<void>
+  findById(id: string): Promise<Character | null>
+  findByName(name: string): Promise<Character | null>
+  findAll(search?: string, page?: number, limit?: number): Promise<Character[]>
 }
