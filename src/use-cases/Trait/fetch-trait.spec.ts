@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { describe, it, expect, beforeEach, assert } from 'vitest'
 import { InMemoryUserRepository } from '../../repositories/test/in-memory-user-repository'
 import { InMemoryTraitRepository } from '../../repositories/test/in-memory-trait-repository'
 import { makeUser } from '../../repositories/test/factories/make-user'
@@ -17,9 +17,8 @@ describe('FetchTraitUseCase', () => {
     sut = new FetchTraitUseCase(traitRepository, userRepository)
   })
 
-  it('should fetch a trait successfully', async () => {
+  it('should fetch traits successfully', async () => {
     const user = makeUser()
-
     await userRepository.create(user)
 
     await Promise.all(
@@ -31,33 +30,53 @@ describe('FetchTraitUseCase', () => {
     const result = await sut.execute({
       userId: user.id.toString(),
       search: '',
-      limit: 10,
       page: 1,
+      limit: 10,
     })
 
-    expect(result.isRight()).toBe(true)
-    expect(traitRepository.items).toHaveLength(3)
+    assert(result.isRight())
+    expect(result.value.traits).toHaveLength(3)
   })
 
   it('should return an error when user is not found', async () => {
-    const user = makeUser()
+    const result = await sut.execute({
+      userId: 'non-existing-user-id',
+      search: '',
+      page: 1,
+      limit: 10,
+    })
 
+    assert(result.isLeft())
+    expect(result.value).toBeInstanceOf(ResourceNotFoundError)
+  })
+
+  it('should paginate traits correctly', async () => {
+    const user = makeUser()
     await userRepository.create(user)
 
     await Promise.all(
-      Array.from({ length: 3 }).map((_, i) =>
+      Array.from({ length: 5 }).map((_, i) =>
         traitRepository.create(makeTrait({ name: `Trait ${i + 1}` }))
       )
     )
 
-    const result = await sut.execute({
-      userId: 'non-existing-user-id',
+    const page1 = await sut.execute({
+      userId: user.id.toString(),
       search: '',
-      limit: 10,
       page: 1,
+      limit: 3,
+    })
+    const page2 = await sut.execute({
+      userId: user.id.toString(),
+      search: '',
+      page: 2,
+      limit: 3,
     })
 
-    expect(result.isLeft()).toBe(true)
-    expect(result.value).toBeInstanceOf(ResourceNotFoundError)
+    assert(page1.isRight())
+    expect(page1.value.traits).toHaveLength(3)
+
+    assert(page2.isRight())
+    expect(page2.value.traits).toHaveLength(2)
   })
 })
