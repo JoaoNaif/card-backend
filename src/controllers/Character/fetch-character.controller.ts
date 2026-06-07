@@ -1,34 +1,25 @@
-import type { Request, Response } from "express"
-import type { FetchCharacterUseCase, FetchCharacterUseCaseRequest } from "../../use-cases/Character/fetch-character"
+import type { Request, Response } from 'express'
+import type { FetchCharacterUseCase } from '../../use-cases/Character/fetch-character'
 
 export class FetchCharacterController {
-    constructor(private fetchCharacterUseCase: FetchCharacterUseCase) { }
+  constructor(private fetchCharacterUseCase: FetchCharacterUseCase) {}
 
-    async handle(req: Request, res: Response): Promise<Response> {
-        const { search, page, limit } = req.query
+  async handle(req: Request, res: Response): Promise<Response> {
+    const { search, page, limit } = req.query
+    const searchStr = (search as string) || ''
+    const pageNum = page ? Number(page) : 1
+    const limitNum = limit ? Number(limit) : 10
 
-        const requestData: FetchCharacterUseCaseRequest = {}
+    const result = await this.fetchCharacterUseCase.execute({
+      search: searchStr,
+      page: pageNum,
+      limit: limitNum,
+    })
 
-        if (search) {
-            requestData.search = String(search)
-        }
-
-        if (page) {
-            const parsedPage = Number(page)
-            if (!isNaN(parsedPage)) {
-                requestData.page = parsedPage
-            }
-        }
-
-        if (limit) {
-            const parsedLimit = Number(limit)
-            if (!isNaN(parsedLimit)) {
-                requestData.limit = parsedLimit
-            }
-        }
-
-        const { characters } = await this.fetchCharacterUseCase.execute(requestData)
-
-        return res.status(200).json(characters)
+    if (result.isLeft()) {
+      return res.status(500).json()
     }
+
+    return res.status(200).json(result.value.characters)
+  }
 }
