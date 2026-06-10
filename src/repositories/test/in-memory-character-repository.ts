@@ -27,14 +27,18 @@ export class InMemoryCharacterRepository implements ICharacterRepository {
     return this.items.find((t) => t.name === name) || null
   }
 
-  async findAll(
-    search = '',
-    page = 1,
-    limit = 10
-  ): Promise<Character[]> {
+  async findAll(search = '', page = 1, limit = 10): Promise<Character[]> {
     const start = (page - 1) * limit
     const end = start + limit
 
     return this.items.filter((t) => t.name.includes(search)).slice(start, end)
+  }
+
+  async countByUserId(userId: string): Promise<number> {
+    return this.items.filter((t) => t.userId === userId).length
+  }
+
+  async findManyByUserId(userId: string): Promise<Character[]> {
+    return this.items.filter((c) => c.userId === userId)
   }
 }

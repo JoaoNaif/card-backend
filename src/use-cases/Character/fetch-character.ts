@@ -1,6 +1,6 @@
 import { right, type Either } from '../../core/either'
 import type { ICharacterRepository } from '../../repositories/interface/character-repository'
-import type { DtoCharacterRaw } from './dto/dto-character-raw'
+import type { DtoCharacterRaw } from './dtos/dto-character-raw'
 
 interface FetchCharacterUseCaseRequest {
   search: string

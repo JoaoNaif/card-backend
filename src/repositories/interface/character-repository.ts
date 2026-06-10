@@ -7,4 +7,6 @@ export interface ICharacterRepository {
   findById(id: string): Promise<Character | null>
   findByName(name: string): Promise<Character | null>
   findAll(search?: string, page?: number, limit?: number): Promise<Character[]>
+  findManyByUserId(userId: string): Promise<Character[]>
+  countByUserId(userId: string): Promise<number>
 }

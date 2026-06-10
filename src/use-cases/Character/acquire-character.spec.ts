@@ -6,6 +6,7 @@ import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import { InMemoryCharacterRepository } from '../../repositories/test/in-memory-character-repository'
 import { AcquireCharacterUseCase } from './acquire-character'
 import { makeCharacter } from '../../repositories/test/factories/make-character'
+import { RosterFullError } from './err/roster-full-error'
 
 let userRepository: InMemoryUserRepository
 let characterRepository: InMemoryCharacterRepository
@@ -34,6 +35,32 @@ describe('AcquireCharacterUseCase', () => {
 
     expect(result.isRight()).toBe(true)
     expect(characterRepository.items[0]?.userId).toEqual(user.id.toString())
+  })
+
+  it('should return an error when user reaches limit character', async () => {
+    const user = makeUser({ userRole: UserRole.ADMIN })
+
+    await userRepository.create(user)
+
+    await Promise.all(
+      Array.from({ length: 8 }).map((_, i) =>
+        characterRepository.create(
+          makeCharacter({ userId: user.id.toString() })
+        )
+      )
+    )
+
+    const character = makeCharacter()
+
+    await characterRepository.create(character)
+
+    const result = await sut.execute({
+      userId: user.id.toString(),
+      characterId: character.id.toString(),
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(RosterFullError)
   })
 
   it('should return an error when character not found', async () => {

@@ -6,7 +6,7 @@ import { Character, Ranking } from '../../entities/character'
 import type { IPowerRepository } from '../../repositories/interface/power-repository'
 import type { ICharacterRepository } from '../../repositories/interface/character-repository'
 import type { IUserRepository } from '../../repositories/interface/user-repository'
-import type { DtoCharacterRaw } from './dto/dto-character-raw'
+import type { DtoCharacterRaw } from './dtos/dto-character-raw'
 
 interface CreateCharacterUseCaseRequest {
   adminId: string

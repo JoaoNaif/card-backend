@@ -42,4 +42,20 @@ export class PrismaCharacterRepository implements ICharacterRepository {
     })
     return data.map(PrismaCharacterMapper.toDomain)
   }
+
+  async countByUserId(userId: string): Promise<number> {
+    const length = await prisma.character.count({
+      where: { userId },
+    })
+
+    return length
+  }
+
+  async findManyByUserId(userId: string): Promise<Character[]> {
+    const characters = await prisma.character.findMany({
+      where: { userId },
+    })
+
+    return characters.map(PrismaCharacterMapper.toDomain)
+  }
 }

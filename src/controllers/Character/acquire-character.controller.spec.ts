@@ -87,6 +87,57 @@ describe('PATCH /characters/acquire (AcquireCharacterController)', () => {
     expect(response.body.errors).toBeDefined()
   })
 
+  it('should return 400 when roster is full (8 characters)', async () => {
+    const cookie = await createUserAndGetCookie()
+
+    const user = await prisma.user.findUnique({
+      where: { email: 'user@example.com' },
+    })
+
+    const power = await prisma.power.create({
+      data: { name: 'Fire', description: 'Fire-based power' },
+    })
+
+    await Promise.all(
+      Array.from({ length: 8 }).map((_, i) =>
+        prisma.character.create({
+          data: {
+            name: `Character ${i}`,
+            description: 'A warrior',
+            maxRanking: Ranking.ANCESTRAL,
+            baseHp: 100,
+            baseAtk: 50,
+            baseDef: 30,
+            baseSpd: 20,
+            powerId: power.id,
+            userId: user!.id,
+          },
+        })
+      )
+    )
+
+    const extraCharacter = await prisma.character.create({
+      data: {
+        name: 'Extra',
+        description: 'One too many',
+        maxRanking: Ranking.ANCESTRAL,
+        baseHp: 100,
+        baseAtk: 50,
+        baseDef: 30,
+        baseSpd: 20,
+        powerId: power.id,
+      },
+    })
+
+    const response = await request(app)
+      .patch('/characters/acquire')
+      .set('Cookie', cookie)
+      .send({ characterId: extraCharacter.id })
+
+    expect(response.status).toBe(400)
+    expect(response.body.message).toBeDefined()
+  })
+
   it('should return 401 when not authenticated', async () => {
     const character = await createCharacter()
 
