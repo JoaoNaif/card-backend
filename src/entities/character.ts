@@ -15,7 +15,7 @@ export enum Ranking {
 export interface CharacterProps {
   name: string
   description: string
-  userId?: string | null
+  userId?: string | null | undefined
   ranking: Ranking
   maxRanking: Ranking
   level: number
@@ -34,16 +34,32 @@ export class Character extends Entity<CharacterProps> {
     return this.props.name
   }
 
+  set name(name: string) {
+    this.props.name = name
+  }
+
   get description() {
     return this.props.description
+  }
+
+  set description(description: string) {
+    this.props.description = description
   }
 
   get userId() {
     return this.props.userId
   }
 
+  set userId(userId: string | null | undefined) {
+    this.props.userId = userId
+  }
+
   get ranking() {
     return this.props.ranking
+  }
+
+  set ranking(ranking: Ranking) {
+    this.props.ranking = ranking
   }
 
   get maxRanking() {
@@ -54,28 +70,56 @@ export class Character extends Entity<CharacterProps> {
     return this.props.level
   }
 
+  set level(level: number) {
+    this.props.level = level
+  }
+
   get xp() {
     return this.props.xp
+  }
+
+  set xp(xp: number) {
+    this.props.xp = xp
   }
 
   get breakthroughAttempts() {
     return this.props.breakthroughAttempts
   }
 
+  set breakthroughAttempts(breakthroughAttempts: number) {
+    this.props.breakthroughAttempts = breakthroughAttempts
+  }
+
   get baseHp() {
     return this.props.baseHp
+  }
+
+  set baseHp(baseHp: number) {
+    this.props.baseHp = baseHp
   }
 
   get baseAtk() {
     return this.props.baseAtk
   }
 
+  set baseAtk(baseAtk: number) {
+    this.props.baseAtk = baseAtk
+  }
+
   get baseDef() {
     return this.props.baseDef
   }
 
+  set baseDef(baseDef: number) {
+    this.props.baseDef = baseDef
+  }
+
   get baseSpd() {
     return this.props.baseSpd
+  }
+
+  set baseSpd(baseSpd: number) {
+    this.props.baseSpd = baseSpd
   }
 
   get powerId() {
