@@ -51,8 +51,6 @@ make-create-user-controller.ts → instancia PrismaUserRepository + BcryptHasher
 ### Either Pattern
 Todos os use cases **devem** retornar `Either<ErroEsquerdo, SucessoDireito>` — não use `throw` para erros de negócio. O tipo está em `src/core/either.ts`.
 
-> **Atenção**: Character, Power e Skill ainda usam `throw` — estão sendo migrados para Either à medida que as entidades são finalizadas.
-
 ### Nomenclatura de Arquivos
 - Kebab-case para arquivos: `create-user.ts`, `make-create-user-controller.ts`
 - PascalCase para classes: `CreateUserUseCase`, `PrismaUserRepository`
@@ -82,11 +80,17 @@ MORTAL → DESBRAVADOR → HEROI → EPICO → LENDARIO → MITICO → ANCESTRAL
 ```
 Cada ranking define o nível máximo do personagem: Mortal (20), Desbravador (40), Herói (60), Épico (80), Lendário+ (100). Na ascensão, o personagem **mantém o nível atual**.
 
+### XP e Nível
+- XP necessário = `nível atual × 100` — XP excedente transborda para o próximo nível
+- Base stats são imutáveis; stats efetivos calculados em runtime: `base + floor(base × growthRate × (level - 1))`
+- Taxa de crescimento por ranking: Mortal 8%, Desbravador 11%, Herói 15%, Épico 20%, Lendário 26%, Mítico 33%, Ancestral 42%
+- Teto de nível por ranking: Mortal 20, Desbravador 40, Herói 60, Épico 80, Lendário/Mítico/Ancestral 100
+- Ao atingir o teto do ranking, XP é descartado até o personagem ascender de ranking
+
 ### Regras de Negócio Planejadas
-- Roster limitado a **8 personagens** por usuário
-- XP necessário = `nível atual × 100`
+- Roster limitado a **8 personagens** por usuário ✅
 - Engine de combate 4v4 em memória com log de turnos
-- Campos de batalha com buffs/debuffs baseados em tags dos personagens
+- Campos de batalha com buffs/debuffs baseados em traits dos personagens
 
 ---
 
@@ -129,7 +133,7 @@ Credenciais: `postgres/docker`, banco: `origin`
 ## Roadmap (PROJECT_PLAN.md)
 
 1. ✅ Clean Architecture + Vitest + Docker
-2. 🔄 Regras de personagens (roster, XP, ranking, Either em todos os use cases)
-3. ⬜ Campos de batalha (tags de características, modificadores)
+2. ✅ Regras de personagens (roster, XP/level up, Either em todos os use cases)
+3. 🔄 Campos de batalha (traits em personagens, modificadores de cenário)
 4. ⬜ Engine de combate 4v4 + endpoints `/battles`
 5. ⬜ Autenticação JWT (rota `/auth/login`, middleware de proteção de rotas)

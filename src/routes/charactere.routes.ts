@@ -4,12 +4,14 @@ import { makeFetchCharacterController } from '../controllers/Character/factories
 import { authenticate } from '../middlewares/authenticate'
 import { makeAcquireCharacterController } from '../controllers/Character/factories/make-acquire-character.controller'
 import { makeSwapCharacterController } from '../controllers/Character/factories/make-swap-character.controller'
+import { makeGainXpController } from '../controllers/Character/factories/make-gain-xp.controller'
 
 const characterRoutes = Router()
 const createCharacterController = makeCreateCharacterController()
 const fetchCharacterController = makeFetchCharacterController()
 const acquireCharacterController = makeAcquireCharacterController()
 const swapCharacterController = makeSwapCharacterController()
+const gainXpController = makeGainXpController()
 
 characterRoutes.post('/', authenticate, ...createCharacterController.handle)
 characterRoutes.get('/', (req, res) =>
@@ -20,6 +22,7 @@ characterRoutes.patch(
   authenticate,
   ...acquireCharacterController.handle
 )
+characterRoutes.patch('/gain-xp', ...gainXpController.handle)
 
 characterRoutes.patch('/swap', authenticate, ...swapCharacterController.handle)
 

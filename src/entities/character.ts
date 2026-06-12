@@ -12,6 +12,26 @@ export enum Ranking {
   ANCESTRAL = 'ANCESTRAL',
 }
 
+const RANKING_MAX_LEVEL: Record<Ranking, number> = {
+  [Ranking.MORTAL]: 20,
+  [Ranking.DESBRAVADOR]: 40,
+  [Ranking.HEROI]: 60,
+  [Ranking.EPICO]: 80,
+  [Ranking.LENDARIO]: 100,
+  [Ranking.MITICO]: 100,
+  [Ranking.ANCESTRAL]: 100,
+}
+
+const RANKING_GROWTH_RATE: Record<Ranking, number> = {
+  [Ranking.MORTAL]: 0.08,
+  [Ranking.DESBRAVADOR]: 0.11,
+  [Ranking.HEROI]: 0.15,
+  [Ranking.EPICO]: 0.20,
+  [Ranking.LENDARIO]: 0.26,
+  [Ranking.MITICO]: 0.33,
+  [Ranking.ANCESTRAL]: 0.42,
+}
+
 export interface CharacterProps {
   name: string
   description: string
@@ -70,16 +90,8 @@ export class Character extends Entity<CharacterProps> {
     return this.props.level
   }
 
-  set level(level: number) {
-    this.props.level = level
-  }
-
   get xp() {
     return this.props.xp
-  }
-
-  set xp(xp: number) {
-    this.props.xp = xp
   }
 
   get breakthroughAttempts() {
@@ -94,32 +106,62 @@ export class Character extends Entity<CharacterProps> {
     return this.props.baseHp
   }
 
-  set baseHp(baseHp: number) {
-    this.props.baseHp = baseHp
-  }
-
   get baseAtk() {
     return this.props.baseAtk
-  }
-
-  set baseAtk(baseAtk: number) {
-    this.props.baseAtk = baseAtk
   }
 
   get baseDef() {
     return this.props.baseDef
   }
 
-  set baseDef(baseDef: number) {
-    this.props.baseDef = baseDef
-  }
-
   get baseSpd() {
     return this.props.baseSpd
   }
 
-  set baseSpd(baseSpd: number) {
-    this.props.baseSpd = baseSpd
+  get maxLevel(): number {
+    return RANKING_MAX_LEVEL[this.props.ranking]
+  }
+
+  get xpToNextLevel(): number {
+    return this.props.level * 100
+  }
+
+  get effectiveHp(): number {
+    return this.calcEffective(this.props.baseHp)
+  }
+
+  get effectiveAtk(): number {
+    return this.calcEffective(this.props.baseAtk)
+  }
+
+  get effectiveDef(): number {
+    return this.calcEffective(this.props.baseDef)
+  }
+
+  get effectiveSpd(): number {
+    return this.calcEffective(this.props.baseSpd)
+  }
+
+  private calcEffective(base: number): number {
+    const rate = RANKING_GROWTH_RATE[this.props.ranking]
+    return base + Math.floor(base * rate * (this.props.level - 1))
+  }
+
+  gainXp(amount: number): number {
+    this.props.xp += amount
+    let levelsGained = 0
+
+    while (this.props.level < this.maxLevel && this.props.xp >= this.xpToNextLevel) {
+      this.props.xp -= this.xpToNextLevel
+      this.props.level++
+      levelsGained++
+    }
+
+    if (this.props.level >= this.maxLevel) {
+      this.props.xp = 0
+    }
+
+    return levelsGained
   }
 
   get powerId() {
