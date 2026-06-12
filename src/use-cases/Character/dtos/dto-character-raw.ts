@@ -15,5 +15,6 @@ export interface DtoCharacterRaw {
   baseDef: number
   baseSpd: number
   powerId: string
+  traits: { id: string; name: string }[]
   createdAt: Date
 }

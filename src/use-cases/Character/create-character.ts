@@ -109,6 +109,7 @@ export class CreateCharacterUseCase {
         xp: character.xp,
         userId: character.userId,
         powerId: character.powerId,
+        traits: [] as { id: string; name: string }[],
         createdAt: character.createdAt,
       },
     })

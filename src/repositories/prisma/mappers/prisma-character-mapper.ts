@@ -3,7 +3,10 @@ import { Character, Ranking } from '../../../entities/character'
 import type { Character as CharacterPrisma } from '../../../generated/prisma'
 
 export class PrismaCharacterMapper {
-  static toDomain(raw: CharacterPrisma): Character {
+  static toDomain(
+    raw: CharacterPrisma,
+    traits?: { id: string; name: string }[]
+  ): Character {
     return Character.create(
       {
         name: raw.name,
@@ -19,6 +22,7 @@ export class PrismaCharacterMapper {
         baseDef: raw.baseDef,
         baseSpd: raw.baseSpd,
         powerId: raw.powerId,
+        traits: traits ?? [],
         createdAt: raw.createdAt,
       },
       new UniqueEntityId(raw.id)

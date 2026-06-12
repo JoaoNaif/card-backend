@@ -9,4 +9,5 @@ export interface ICharacterRepository {
   findAll(search?: string, page?: number, limit?: number): Promise<Character[]>
   findManyByUserId(userId: string): Promise<Character[]>
   countByUserId(userId: string): Promise<number>
+  assignTrait(characterId: string, traitId: string): Promise<void>
 }

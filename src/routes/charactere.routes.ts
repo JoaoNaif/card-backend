@@ -5,6 +5,7 @@ import { authenticate } from '../middlewares/authenticate'
 import { makeAcquireCharacterController } from '../controllers/Character/factories/make-acquire-character.controller'
 import { makeSwapCharacterController } from '../controllers/Character/factories/make-swap-character.controller'
 import { makeGainXpController } from '../controllers/Character/factories/make-gain-xp.controller'
+import { makeAssignTraitController } from '../controllers/Character/factories/make-assign-trait.controller'
 
 const characterRoutes = Router()
 const createCharacterController = makeCreateCharacterController()
@@ -12,6 +13,7 @@ const fetchCharacterController = makeFetchCharacterController()
 const acquireCharacterController = makeAcquireCharacterController()
 const swapCharacterController = makeSwapCharacterController()
 const gainXpController = makeGainXpController()
+const assignTraitController = makeAssignTraitController()
 
 characterRoutes.post('/', authenticate, ...createCharacterController.handle)
 characterRoutes.get('/', (req, res) =>
@@ -25,5 +27,6 @@ characterRoutes.patch(
 characterRoutes.patch('/gain-xp', ...gainXpController.handle)
 
 characterRoutes.patch('/swap', authenticate, ...swapCharacterController.handle)
+characterRoutes.patch('/assign-trait', authenticate, ...assignTraitController.handle)
 
 export { characterRoutes }

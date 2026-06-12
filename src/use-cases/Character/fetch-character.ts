@@ -45,6 +45,7 @@ export class FetchCharacterUseCase {
         baseSpd: character.baseSpd,
         userId: character.userId,
         powerId: character.powerId,
+        traits: character.traits,
         createdAt: character.createdAt,
       })),
     })

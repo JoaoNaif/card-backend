@@ -3,6 +3,7 @@ import type { ICharacterRepository } from '../interface/character-repository'
 
 export class InMemoryCharacterRepository implements ICharacterRepository {
   public items: Character[] = []
+  public traitAssignments: Map<string, Set<string>> = new Map()
 
   async create(character: Character): Promise<void> {
     this.items.push(character)
@@ -40,5 +41,12 @@ export class InMemoryCharacterRepository implements ICharacterRepository {
 
   async findManyByUserId(userId: string): Promise<Character[]> {
     return this.items.filter((c) => c.userId === userId)
+  }
+
+  async assignTrait(characterId: string, traitId: string): Promise<void> {
+    if (!this.traitAssignments.has(characterId)) {
+      this.traitAssignments.set(characterId, new Set())
+    }
+    this.traitAssignments.get(characterId)!.add(traitId)
   }
 }

@@ -37,10 +37,11 @@ export class PrismaCharacterRepository implements ICharacterRepository {
   async findAll(search = '', page = 1, limit = 10): Promise<Character[]> {
     const data = await prisma.character.findMany({
       where: { name: { contains: search } },
+      include: { traits: { select: { id: true, name: true } } },
       take: limit,
       skip: (page - 1) * limit,
     })
-    return data.map(PrismaCharacterMapper.toDomain)
+    return data.map((item) => PrismaCharacterMapper.toDomain(item, item.traits))
   }
 
   async countByUserId(userId: string): Promise<number> {
@@ -56,6 +57,13 @@ export class PrismaCharacterRepository implements ICharacterRepository {
       where: { userId },
     })
 
-    return characters.map(PrismaCharacterMapper.toDomain)
+    return characters.map((item) => PrismaCharacterMapper.toDomain(item))
+  }
+
+  async assignTrait(characterId: string, traitId: string): Promise<void> {
+    await prisma.character.update({
+      where: { id: characterId },
+      data: { traits: { connect: { id: traitId } } },
+    })
   }
 }

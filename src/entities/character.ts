@@ -46,6 +46,7 @@ export interface CharacterProps {
   baseDef: number
   baseSpd: number
   powerId: string
+  traits?: { id: string; name: string }[]
   createdAt: Date
 }
 
@@ -116,6 +117,10 @@ export class Character extends Entity<CharacterProps> {
 
   get baseSpd() {
     return this.props.baseSpd
+  }
+
+  get traits(): { id: string; name: string }[] {
+    return this.props.traits ?? []
   }
 
   get maxLevel(): number {
