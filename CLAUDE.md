@@ -76,21 +76,65 @@ Ficam em `src/core/error/err/`. Erros existentes:
 
 ### Ranking (enum `Ranking`)
 ```
-MORTAL → DESBRAVADOR → HEROI → EPICO → LENDARIO → MITICO → ANCESTRAL
+DISCRETO → CONTINUO → DIFERENCIAVEL → NAO_LINEAR → SINGULAR → DIVERGENTE → CAOTICO
 ```
-Cada ranking define o nível máximo do personagem: Mortal (20), Desbravador (40), Herói (60), Épico (80), Lendário+ (100). Na ascensão, o personagem **mantém o nível atual**.
+Ranking = **potencial**, não poder. Define apenas o teto de nível — não a força atual.
+
+| Ranking | Nível Máximo |
+|---|---|
+| DISCRETO | 20 |
+| CONTINUO | 40 |
+| DIFERENCIAVEL | 60 |
+| NAO_LINEAR | 80 |
+| SINGULAR / DIVERGENTE / CAOTICO | 100 |
 
 ### XP e Nível
 - XP necessário = `nível atual × 100` — XP excedente transborda para o próximo nível
-- Base stats são imutáveis; stats efetivos calculados em runtime: `base + floor(base × growthRate × (level - 1))`
-- Taxa de crescimento por ranking: Mortal 8%, Desbravador 11%, Herói 15%, Épico 20%, Lendário 26%, Mítico 33%, Ancestral 42%
-- Teto de nível por ranking: Mortal 20, Desbravador 40, Herói 60, Épico 80, Lendário/Mítico/Ancestral 100
+- Taxa de crescimento **uniforme para todos os rankings**: `base + floor(base × GROWTH_RATE × (level - 1))`
+- `GROWTH_RATE` é constante global na engine (valor inicial sugerido: 0.10 — calibrar com testes)
 - Ao atingir o teto do ranking, XP é descartado até o personagem ascender de ranking
+
+### Pilares de Poder (enum `Pillar`)
+Cada `Power` pertence a um pilar que define o stat consumido pelas suas skills:
+
+| Pilar | Stat consumido pela skill |
+|---|---|
+| MATERIAL | HP |
+| VETORIAL | ATK |
+| BIOLOGICA | SPD |
+| PSIQUICA | DEF |
+| FUNDAMENTAL | Qualquer stat — definido por skill (pode ser múltiplos) |
+
+### Custo de Skill como Debuff
+Skills não custam energia. Usar uma skill impõe debuff temporário no próprio personagem:
+- `debuffStat` — qual stat é reduzido
+- `debuffValue` — quanto é reduzido (valor absoluto)
+- `debuffDuration` — quantos turnos dura o debuff
+
+### Dual Power
+- Personagem pode ter até 2 poderes (`powerId` + `secondaryPowerId`)
+- Multiplicador global: todos os debuffs de skill custam **1.25×** para personagens com dual power
+- Validado no use case: máximo 2 poderes por personagem
+
+### Sistema de Despertar
+- Definido no `Power`: `canAwaken: Boolean` — não todo poder desperta (ex: Tempo não desperta)
+- Janela: nível 40+, verificado a cada 5 níveis (40, 45, 50...)
+- Chance aleatória por verificação (valor a calibrar, sugestão: 15%)
+- Forma despertada sorteada entre as possíveis (`PowerAwakening` table)
+- Exemplo: Fogo → Magma ou Plasma (sorteado)
+- Despertar é permanente, desbloqueia skills exclusivas, pilar não muda
 
 ### Regras de Negócio Planejadas
 - Roster limitado a **8 personagens** por usuário ✅
 - Engine de combate 4v4 em memória com log de turnos
 - Campos de batalha com buffs/debuffs baseados em traits dos personagens
+
+### Regras de Campo de Batalha (Confirmadas)
+- Toda batalha começa com um **BattleField padrão aleatório** — sem limite de turno, dura até o fim da batalha
+- Skills podem mudar o campo ativo mid-battle via `appliesBattleFieldId` + `fieldDuration` (em turnos)
+- Quando `fieldDuration` expira, retorna ao campo anterior (a definir: campo inicial ou o padrão?)
+- **Eliminação:** personagem com 0 HP está derrotado e sai permanentemente da batalha
+- `breakthroughAttempts` existe no schema mas a mecânica ainda não foi definida — não implementar por ora
 
 ---
 
@@ -134,6 +178,6 @@ Credenciais: `postgres/docker`, banco: `origin`
 
 1. ✅ Clean Architecture + Vitest + Docker
 2. ✅ Regras de personagens (roster, XP/level up, Either em todos os use cases)
-3. 🔄 Campos de batalha (traits em personagens, modificadores de cenário)
-4. ⬜ Engine de combate 4v4 + endpoints `/battles`
+3. ✅ Campos de batalha (traits em personagens, modificadores de cenário)
+4. ⬜ Schema v2 (ranking renomeado, pilares, debuff, dual power, despertar) → depois engine de combate 4v4 + endpoints `/battles`
 5. ⬜ Autenticação JWT (rota `/auth/login`, middleware de proteção de rotas)
