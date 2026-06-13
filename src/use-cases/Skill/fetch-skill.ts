@@ -34,6 +34,8 @@ export class FetchSkillUseCase {
         limitation: skill.limitation,
         minLevel: skill.minLevel,
         powerId: skill.powerId,
+        appliesBattleFieldId: skill.appliesBattleFieldId ?? null,
+        fieldDuration: skill.fieldDuration ?? null,
         createdAt: skill.createdAt,
       })),
     })
