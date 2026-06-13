@@ -8,10 +8,13 @@ import { CreateSkillUseCase } from './create-skill'
 import { InMemorySkillRepository } from '../../repositories/test/in-memory-skill-repository'
 import { makePower } from '../../repositories/test/factories/make-power'
 import { InMemoryPowerRepository } from '../../repositories/test/in-memory-power-repository'
+import { InMemoryBattleFieldRepository } from '../../repositories/test/in-memory-battle-field-repository'
+import { makeBattleField } from '../../repositories/test/factories/make-battle-field'
 
 let userRepository: InMemoryUserRepository
 let skillRepository: InMemorySkillRepository
 let powerRepository: InMemoryPowerRepository
+let battleFieldRepository: InMemoryBattleFieldRepository
 let sut: CreateSkillUseCase
 
 describe('CreateSkillUseCase', () => {
@@ -19,10 +22,12 @@ describe('CreateSkillUseCase', () => {
     userRepository = new InMemoryUserRepository()
     skillRepository = new InMemorySkillRepository()
     powerRepository = new InMemoryPowerRepository()
+    battleFieldRepository = new InMemoryBattleFieldRepository()
     sut = new CreateSkillUseCase(
       skillRepository,
       userRepository,
-      powerRepository
+      powerRepository,
+      battleFieldRepository
     )
   })
 
@@ -51,6 +56,42 @@ describe('CreateSkillUseCase', () => {
     if (result.isRight()) {
       expect(result.value.skill.name).toBe('Brave')
       expect(result.value.skill.description).toBe('A brave trait')
+    }
+  })
+
+  it('should create a skill with battle field successfully', async () => {
+    const user = makeUser({ userRole: UserRole.ADMIN })
+
+    await userRepository.create(user)
+
+    const power = makePower()
+
+    await powerRepository.create(power)
+
+    const battleField = makeBattleField()
+
+    await battleFieldRepository.create(battleField)
+
+    const result = await sut.execute({
+      userId: user.id.toString(),
+      name: 'Brave',
+      description: 'A brave trait',
+      cost: 1,
+      limitation: 'limit',
+      minLevel: 20,
+      powerId: power.id.toString(),
+      appliesBattleFieldId: battleField.id.toString(),
+      fieldDuration: 3,
+    })
+
+    expect(result.isRight()).toBe(true)
+    expect(userRepository.items).toHaveLength(1)
+
+    if (result.isRight()) {
+      expect(result.value.skill.appliesBattleFieldId).toBe(
+        battleField.id.toString()
+      )
+      expect(result.value.skill.fieldDuration).toBe(3)
     }
   })
 

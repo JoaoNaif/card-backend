@@ -1,3 +1,4 @@
+import type { DtoBattleFieldRaw } from '../../BattleField/dtos/dto-battle-field-raw'
 import type { DtoPowerRaw } from '../../Power/dtos/dto-power-raw'
 
 export interface DtoSkillAndPower {
@@ -10,4 +11,6 @@ export interface DtoSkillAndPower {
   powerId: string
   createdAt: Date
   power: DtoPowerRaw
+  battleField: DtoBattleFieldRaw | null
+  fieldDuration: number | null
 }

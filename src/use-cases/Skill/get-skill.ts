@@ -1,5 +1,6 @@
 import { left, right, type Either } from '../../core/either'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
+import type { IBattleFieldRepository } from '../../repositories/interface/battle-field-repository'
 import type { IPowerRepository } from '../../repositories/interface/power-repository'
 import type { ISkillRepository } from '../../repositories/interface/skill-repository'
 import type { DtoSkillAndPower } from './dtos/dto-skill-and-power'
@@ -18,7 +19,8 @@ type GetSkillUseCaseResponse = Either<
 export class GetSkillUseCase {
   constructor(
     private skillRepository: ISkillRepository,
-    private powerRepository: IPowerRepository
+    private powerRepository: IPowerRepository,
+    private battleFieldRepository: IBattleFieldRepository
   ) {}
 
   async execute({
@@ -34,6 +36,18 @@ export class GetSkillUseCase {
 
     if (!power) {
       return left(new ResourceNotFoundError('Power'))
+    }
+
+    let battleField = null
+
+    if (skill.appliesBattleFieldId) {
+      battleField = await this.battleFieldRepository.findById(
+        skill.appliesBattleFieldId
+      )
+
+      if (!battleField) {
+        return left(new ResourceNotFoundError('Battle field'))
+      }
     }
 
     return right({
@@ -52,6 +66,23 @@ export class GetSkillUseCase {
           description: power.description,
           createdAt: power.createdAt,
         },
+        fieldDuration: skill.fieldDuration ?? null,
+        battleField: battleField
+          ? {
+              id: battleField.id.toString(),
+              name: battleField.name,
+              description: battleField.description,
+              modifiers: battleField.modifiers.map((mod) => ({
+                id: mod.id,
+                traitName: mod.traitId,
+                traitId: mod.traitId,
+                bonusType: mod.bonusType,
+                bonusValue: mod.bonusValue,
+                stat: mod.stat,
+              })),
+              createdAt: battleField.createdAt,
+            }
+          : null,
       },
     })
   }

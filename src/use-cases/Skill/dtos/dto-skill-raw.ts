@@ -6,5 +6,7 @@ export interface DtoSkillRaw {
   cost: number
   minLevel: number
   powerId: string
+  appliesBattleFieldId?: string | null
+  fieldDuration?: number | null
   createdAt: Date
 }
