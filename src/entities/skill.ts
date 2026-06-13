@@ -9,6 +9,8 @@ export interface SkillProps {
   cost: number
   minLevel: number
   powerId: string
+  appliesBattleFieldId?: string | null
+  fieldDuration?: number | null
   createdAt: Date
 }
 
@@ -35,6 +37,14 @@ export class Skill extends Entity<SkillProps> {
 
   get powerId() {
     return this.props.powerId
+  }
+
+  get appliesBattleFieldId() {
+    return this.props.appliesBattleFieldId
+  }
+
+  get fieldDuration() {
+    return this.props.fieldDuration
   }
 
   get createdAt() {

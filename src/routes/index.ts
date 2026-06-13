@@ -6,6 +6,7 @@ import { skillRoutes } from './skill.routes'
 import { characterRoutes } from './charactere.routes'
 import { characterSkillRoutes } from './character-skill.routes'
 import { traitRoutes } from './trait.routes'
+import { battleFieldRoutes } from './battle-field.routes'
 
 const routes = Router()
 
@@ -16,5 +17,6 @@ routes.use('/skills', skillRoutes)
 routes.use('/characters', characterRoutes)
 routes.use('/character-skills', characterSkillRoutes)
 routes.use('/traits', traitRoutes)
+routes.use('/battle-field', battleFieldRoutes)
 
 export default routes

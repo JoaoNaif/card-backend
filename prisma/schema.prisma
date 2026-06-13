@@ -25,6 +25,18 @@ enum Ranking {
   ANCESTRAL
 }
 
+enum StatType {
+  HP
+  ATK
+  DEF
+  SPD
+}
+
+enum BonusType {
+  PERCENT
+  FLAT
+}
+
 model User {
   id           String      @id @default(cuid())
   email        String      @unique
@@ -36,12 +48,13 @@ model User {
 }
 
 model Trait {
-  id          String      @id @default(cuid())
-  name        String      @unique
-  description String
-  characters  Character[]
-  skills      Skill[]
-  createdAt   DateTime    @default(now())
+  id                   String                @id @default(cuid())
+  name                 String                @unique
+  description          String
+  characters           Character[]
+  skills               Skill[]
+  battleFieldModifiers BattleFieldModifier[]
+  createdAt            DateTime              @default(now())
 }
 
 model Power {
@@ -54,17 +67,40 @@ model Power {
 }
 
 model Skill {
-  id             String           @id @default(cuid())
-  name           String           @unique
-  description    String
-  limitation     String
-  cost           Int
-  minLevel       Int
-  powerId        String
-  power          Power            @relation(fields: [powerId], references: [id])
-  requiredTraits Trait[]
-  characters     CharacterSkill[]
-  createdAt      DateTime         @default(now())
+  id                   String           @id @default(cuid())
+  name                 String           @unique
+  description          String
+  limitation           String
+  cost                 Int
+  minLevel             Int
+  powerId              String
+  appliesBattleFieldId String?
+  fieldDuration        Int?
+  power                Power            @relation(fields: [powerId], references: [id])
+  appliesBattleField   BattleField?     @relation(fields: [appliesBattleFieldId], references: [id])
+  requiredTraits       Trait[]
+  characters           CharacterSkill[]
+  createdAt            DateTime         @default(now())
+}
+
+model BattleField {
+  id          String                @id @default(cuid())
+  name        String                @unique
+  description String
+  modifiers   BattleFieldModifier[]
+  skills      Skill[]
+  createdAt   DateTime              @default(now())
+}
+
+model BattleFieldModifier {
+  id            String      @id @default(cuid())
+  battleFieldId String
+  traitId       String
+  stat          StatType
+  bonusType     BonusType
+  bonusValue    Float
+  battleField   BattleField @relation(fields: [battleFieldId], references: [id], onDelete: Cascade)
+  trait         Trait       @relation(fields: [traitId], references: [id])
 }
 
 model Character {
