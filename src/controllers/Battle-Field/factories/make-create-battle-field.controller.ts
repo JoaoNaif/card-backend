@@ -1,7 +1,7 @@
 import { PrismaBattleFieldRepository } from '../../../repositories/prisma/prisma-battle-field-repository'
 import { PrismaTraitRepository } from '../../../repositories/prisma/prisma-trait-repository'
 import { PrismaUserRepository } from '../../../repositories/prisma/prisma-user-repository'
-import { CreateBattleFieldUseCase } from '../../../use-cases/BattleField/create-battle-field'
+import { CreateBattleFieldUseCase } from '../../../use-cases/Battle-Field/create-battle-field'
 import { CreateBattleFieldController } from '../create-battle-field.controller'
 
 export function makeCreateBattleFieldController(): CreateBattleFieldController {

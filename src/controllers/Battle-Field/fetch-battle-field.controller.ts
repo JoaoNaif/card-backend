@@ -1,5 +1,5 @@
 import type { Request, Response } from 'express'
-import type { FetchBattleFieldUseCase } from '../../use-cases/BattleField/fetch-battle-field'
+import type { FetchBattleFieldUseCase } from '../../use-cases/Battle-Field/fetch-battle-field'
 
 export class FetchBattleFieldController {
   constructor(private fetchBattleFieldUseCase: FetchBattleFieldUseCase) {}

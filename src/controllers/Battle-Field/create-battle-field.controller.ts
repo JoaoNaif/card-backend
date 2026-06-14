@@ -2,7 +2,7 @@ import type { Request, Response } from 'express'
 import { zodValidationPipe } from '../_pipe/zod-validation-pipe'
 import z from 'zod'
 import { BonusType, StatType } from '../../generated/prisma'
-import type { CreateBattleFieldUseCase } from '../../use-cases/BattleField/create-battle-field'
+import type { CreateBattleFieldUseCase } from '../../use-cases/Battle-Field/create-battle-field'
 
 const modifierSchema = z.object({
   traitId: z.string(),

@@ -1,5 +1,5 @@
 import type { StatType } from '../../../entities/skill'
-import type { DtoBattleFieldRaw } from '../../BattleField/dtos/dto-battle-field-raw'
+import type { DtoBattleFieldRaw } from '../../Battle-Field/dtos/dto-battle-field-raw'
 import type { DtoPowerRaw } from '../../Power/dtos/dto-power-raw'
 
 export interface DtoSkillAndPower {

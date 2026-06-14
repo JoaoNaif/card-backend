@@ -7,12 +7,14 @@ import { characterRoutes } from './charactere.routes'
 import { characterSkillRoutes } from './character-skill.routes'
 import { traitRoutes } from './trait.routes'
 import { battleFieldRoutes } from './battle-field.routes'
+import { powerAwakeningRoutes } from './power-awakening.routes'
 
 const routes = Router()
 
 routes.get('/', indexController.home)
 routes.use('/users', userRoutes)
 routes.use('/powers', powerRoutes)
+routes.use('/power-awakening', powerAwakeningRoutes)
 routes.use('/skills', skillRoutes)
 routes.use('/characters', characterRoutes)
 routes.use('/character-skills', characterSkillRoutes)

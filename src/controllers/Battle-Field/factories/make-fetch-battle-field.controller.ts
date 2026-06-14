@@ -1,5 +1,5 @@
 import { PrismaBattleFieldRepository } from '../../../repositories/prisma/prisma-battle-field-repository'
-import { FetchBattleFieldUseCase } from '../../../use-cases/BattleField/fetch-battle-field'
+import { FetchBattleFieldUseCase } from '../../../use-cases/Battle-Field/fetch-battle-field'
 import { FetchBattleFieldController } from '../fetch-battle-field.controller'
 
 export function makeFetchBattleFieldController(): FetchBattleFieldController {
