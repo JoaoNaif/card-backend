@@ -121,6 +121,10 @@ export class Character extends Entity<CharacterProps> {
     return this.props.awakenedPowerId
   }
 
+  set awakenedPowerId(id: string) {
+    this.props.awakenedPowerId = id
+  }
+
   get traits(): { id: string; name: string }[] {
     return this.props.traits ?? []
   }

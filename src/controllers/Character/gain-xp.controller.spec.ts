@@ -48,7 +48,7 @@ describe('PATCH /characters/gain-xp (GainXpController)', () => {
       .send({ characterId: character.id, xpAmount: 50 })
 
     expect(response.status).toBe(201)
-    expect(response.body).toEqual({ levelsGained: 0, newLevel: 1 })
+    expect(response.body).toEqual({ levelsGained: 0, newLevel: 1, awakened: false })
 
     const updated = await prisma.character.findUnique({ where: { id: character.id } })
     expect(updated?.xp).toBe(50)
@@ -64,7 +64,7 @@ describe('PATCH /characters/gain-xp (GainXpController)', () => {
       .send({ characterId: character.id, xpAmount: 100 })
 
     expect(response.status).toBe(201)
-    expect(response.body).toEqual({ levelsGained: 1, newLevel: 2 })
+    expect(response.body).toEqual({ levelsGained: 1, newLevel: 2, awakened: false })
 
     const updated = await prisma.character.findUnique({ where: { id: character.id } })
     expect(updated?.level).toBe(2)
@@ -80,7 +80,7 @@ describe('PATCH /characters/gain-xp (GainXpController)', () => {
       .send({ characterId: character.id, xpAmount: 600 })
 
     expect(response.status).toBe(201)
-    expect(response.body).toEqual({ levelsGained: 3, newLevel: 4 })
+    expect(response.body).toEqual({ levelsGained: 3, newLevel: 4, awakened: false })
   })
 
   it('should cap at maxLevel and discard excess XP', async () => {
@@ -91,7 +91,7 @@ describe('PATCH /characters/gain-xp (GainXpController)', () => {
       .send({ characterId: character.id, xpAmount: 9999 })
 
     expect(response.status).toBe(201)
-    expect(response.body).toEqual({ levelsGained: 1, newLevel: 20 })
+    expect(response.body).toEqual({ levelsGained: 1, newLevel: 20, awakened: false })
 
     const updated = await prisma.character.findUnique({ where: { id: character.id } })
     expect(updated?.xp).toBe(0)
