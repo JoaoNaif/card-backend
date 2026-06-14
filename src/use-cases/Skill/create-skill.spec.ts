@@ -10,6 +10,7 @@ import { makePower } from '../../repositories/test/factories/make-power'
 import { InMemoryPowerRepository } from '../../repositories/test/in-memory-power-repository'
 import { InMemoryBattleFieldRepository } from '../../repositories/test/in-memory-battle-field-repository'
 import { makeBattleField } from '../../repositories/test/factories/make-battle-field'
+import { StatType } from '../../entities/skill'
 
 let userRepository: InMemoryUserRepository
 let skillRepository: InMemorySkillRepository
@@ -44,8 +45,11 @@ describe('CreateSkillUseCase', () => {
       userId: user.id.toString(),
       name: 'Brave',
       description: 'A brave trait',
-      cost: 1,
       limitation: 'limit',
+      cooldownTurns: 0,
+      debuffStat: StatType.HP,
+      debuffValue: 10,
+      debuffDuration: 2,
       minLevel: 20,
       powerId: power.id.toString(),
     })
@@ -76,8 +80,11 @@ describe('CreateSkillUseCase', () => {
       userId: user.id.toString(),
       name: 'Brave',
       description: 'A brave trait',
-      cost: 1,
       limitation: 'limit',
+      cooldownTurns: 0,
+      debuffStat: StatType.HP,
+      debuffValue: 10,
+      debuffDuration: 2,
       minLevel: 20,
       powerId: power.id.toString(),
       appliesBattleFieldId: battleField.id.toString(),
@@ -104,8 +111,11 @@ describe('CreateSkillUseCase', () => {
       userId: user.id.toString(),
       name: 'Brave',
       description: 'A brave trait',
-      cost: 1,
       limitation: 'limit',
+      cooldownTurns: 0,
+      debuffStat: StatType.HP,
+      debuffValue: 10,
+      debuffDuration: 2,
       minLevel: 20,
       powerId: 'non-power',
     })
@@ -127,7 +137,10 @@ describe('CreateSkillUseCase', () => {
       userId: user.id.toString(),
       name: 'Brave',
       description: 'A brave trait',
-      cost: 1,
+      cooldownTurns: 0,
+      debuffStat: StatType.HP,
+      debuffValue: 10,
+      debuffDuration: 2,
       limitation: 'limit',
       minLevel: 20,
       powerId: power.id.toString(),
@@ -146,8 +159,11 @@ describe('CreateSkillUseCase', () => {
       userId: 'non-existing-user-id',
       name: 'Brave',
       description: 'A brave trait',
-      cost: 1,
       limitation: 'limit',
+      cooldownTurns: 0,
+      debuffStat: StatType.HP,
+      debuffValue: 10,
+      debuffDuration: 2,
       minLevel: 20,
       powerId: power.id.toString(),
     })

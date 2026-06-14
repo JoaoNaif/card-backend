@@ -2,7 +2,7 @@ import { left, right, type Either } from '../../core/either'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import { ResourceAlreadyExistError } from '../../core/error/err/resource-already-exist-error'
 import { UnauthorizedError } from '../../core/error/err/unauthorized-error'
-import { Skill } from '../../entities/skill'
+import { Skill, StatType } from '../../entities/skill'
 import type { IBattleFieldRepository } from '../../repositories/interface/battle-field-repository'
 import type { IPowerRepository } from '../../repositories/interface/power-repository'
 import type { ISkillRepository } from '../../repositories/interface/skill-repository'
@@ -14,7 +14,10 @@ interface CreateSkillUseCaseRequest {
   name: string
   description: string
   limitation: string
-  cost: number
+  cooldownTurns: number
+  debuffStat: StatType
+  debuffValue: number
+  debuffDuration: number
   minLevel: number
   powerId: string
   appliesBattleFieldId?: string | null
@@ -40,8 +43,11 @@ export class CreateSkillUseCase {
     userId,
     name,
     description,
-    cost,
     limitation,
+    cooldownTurns,
+    debuffDuration,
+    debuffStat,
+    debuffValue,
     minLevel,
     powerId,
     appliesBattleFieldId,
@@ -72,7 +78,8 @@ export class CreateSkillUseCase {
     let battleField = null
 
     if (appliesBattleFieldId) {
-      battleField = await this.battleFieldRepository.findById(appliesBattleFieldId)
+      battleField =
+        await this.battleFieldRepository.findById(appliesBattleFieldId)
 
       if (!battleField) {
         return left(new ResourceNotFoundError('Battle field'))
@@ -82,9 +89,12 @@ export class CreateSkillUseCase {
     const skill = Skill.create({
       name,
       description,
-      cost,
       limitation,
       minLevel,
+      cooldownTurns,
+      debuffDuration,
+      debuffStat,
+      debuffValue,
       powerId: power.id.toString(),
       appliesBattleFieldId: battleField?.id.toString() ?? null,
       fieldDuration: fieldDuration ?? null,
@@ -97,8 +107,11 @@ export class CreateSkillUseCase {
         id: skill.id.toString(),
         name: skill.name,
         description: skill.description,
-        cost: skill.cost,
         limitation: skill.limitation,
+        cooldownTurns: skill.cooldownTurns,
+        debuffDuration: skill.debuffDuration,
+        debuffStat: skill.debuffStat,
+        debuffValue: skill.debuffValue,
         minLevel: skill.minLevel,
         powerId: skill.powerId,
         appliesBattleFieldId: skill.appliesBattleFieldId ?? null,

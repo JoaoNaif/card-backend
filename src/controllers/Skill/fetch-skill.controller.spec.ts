@@ -14,7 +14,16 @@ describe('GET /skills (FetchSkillController)', () => {
   })
 
   async function createPower(name = 'Fire', description = 'Fire-based power') {
-    return prisma.power.create({ data: { name, description } })
+    return prisma.power.create({
+      data: { name, description, canAwaken: false, isAwakened: false, pillar: 'BIOLOGICA' },
+    })
+  }
+
+  const baseSkill = {
+    cooldownTurns: 2,
+    debuffStat: 'HP',
+    debuffValue: 10,
+    debuffDuration: 2,
   }
 
   it('should return 200 with an empty list when no skills exist', async () => {
@@ -29,8 +38,8 @@ describe('GET /skills (FetchSkillController)', () => {
 
     await prisma.skill.createMany({
       data: [
-        { name: 'Fireball', description: 'Launches a fireball', limitation: 'Once per turn', cost: 3, minLevel: 5, powerId: power.id },
-        { name: 'Fire Shield', description: 'Creates a fire shield', limitation: 'Passive', cost: 0, minLevel: 10, powerId: power.id },
+        { name: 'Fireball', description: 'Launches a fireball', limitation: 'Once per turn', ...baseSkill, minLevel: 5, powerId: power.id },
+        { name: 'Fire Shield', description: 'Creates a fire shield', limitation: 'Passive', ...baseSkill, minLevel: 10, powerId: power.id },
       ],
     })
 
@@ -46,11 +55,11 @@ describe('GET /skills (FetchSkillController)', () => {
     )
   })
 
-  it('each skill should have id, name, description, cost, minLevel, limitation, powerId and createdAt', async () => {
+  it('each skill should have id, name, description, debuff fields, minLevel, limitation, powerId and createdAt', async () => {
     const power = await createPower()
 
     await prisma.skill.create({
-      data: { name: 'Fireball', description: 'Launches a fireball', limitation: 'Once per turn', cost: 3, minLevel: 5, powerId: power.id },
+      data: { name: 'Fireball', description: 'Launches a fireball', limitation: 'Once per turn', ...baseSkill, minLevel: 5, powerId: power.id },
     })
 
     const response = await request(app).get('/skills')
@@ -61,7 +70,10 @@ describe('GET /skills (FetchSkillController)', () => {
       name: 'Fireball',
       description: 'Launches a fireball',
       limitation: 'Once per turn',
-      cost: 3,
+      cooldownTurns: 2,
+      debuffStat: 'HP',
+      debuffValue: 10,
+      debuffDuration: 2,
       minLevel: 5,
       powerId: power.id,
       createdAt: expect.any(String),
@@ -73,8 +85,8 @@ describe('GET /skills (FetchSkillController)', () => {
 
     await prisma.skill.createMany({
       data: [
-        { name: 'Fireball', description: 'Launches a fireball', limitation: 'Once per turn', cost: 3, minLevel: 5, powerId: power.id },
-        { name: 'Ice Shard', description: 'Throws an ice shard', limitation: 'None', cost: 2, minLevel: 1, powerId: power.id },
+        { name: 'Fireball', description: 'Launches a fireball', limitation: 'Once per turn', ...baseSkill, minLevel: 5, powerId: power.id },
+        { name: 'Ice Shard', description: 'Throws an ice shard', limitation: 'None', ...baseSkill, minLevel: 1, powerId: power.id },
       ],
     })
 
@@ -93,7 +105,7 @@ describe('GET /skills (FetchSkillController)', () => {
         name: `Skill ${i + 1}`,
         description: `Description ${i + 1}`,
         limitation: 'None',
-        cost: i,
+        ...baseSkill,
         minLevel: i + 1,
         powerId: power.id,
       })),

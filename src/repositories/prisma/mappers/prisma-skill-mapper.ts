@@ -1,5 +1,5 @@
 import { UniqueEntityId } from '../../../core/entities/unique-entity-id'
-import { Skill } from '../../../entities/skill'
+import { Skill, StatType } from '../../../entities/skill'
 import type { Skill as SkillPrisma } from '../../../generated/prisma'
 
 export class PrismaSkillMapper {
@@ -8,8 +8,13 @@ export class PrismaSkillMapper {
       {
         name: skill.name,
         description: skill.description,
-        cost: skill.cost,
         limitation: skill.limitation,
+        cooldownTurns: skill.cooldownTurns,
+        debuffDuration: skill.debuffDuration,
+        debuffStat: skill.debuffStat as StatType,
+        debuffValue: skill.debuffValue,
+        appliesBattleFieldId: skill.appliesBattleFieldId,
+        fieldDuration: skill.fieldDuration,
         powerId: skill.powerId,
         minLevel: skill.minLevel,
         createdAt: skill.createdAt,
@@ -23,8 +28,13 @@ export class PrismaSkillMapper {
       id: skill.id.toString(),
       name: skill.name,
       description: skill.description,
-      cost: skill.cost,
       limitation: skill.limitation,
+      cooldownTurns: skill.cooldownTurns,
+      debuffDuration: skill.debuffDuration,
+      debuffStat: skill.debuffStat,
+      debuffValue: skill.debuffValue,
+      appliesBattleFieldId: skill.appliesBattleFieldId,
+      fieldDuration: skill.fieldDuration,
       powerId: skill.powerId,
       minLevel: skill.minLevel,
       createdAt: skill.createdAt,
@@ -35,8 +45,13 @@ export class PrismaSkillMapper {
     return {
       name: skill.name,
       description: skill.description,
-      cost: skill.cost,
       limitation: skill.limitation,
+      cooldownTurns: skill.cooldownTurns,
+      debuffDuration: skill.debuffDuration,
+      debuffStat: skill.debuffStat,
+      debuffValue: skill.debuffValue,
+      appliesBattleFieldId: skill.appliesBattleFieldId,
+      fieldDuration: skill.fieldDuration,
       powerId: skill.powerId,
       minLevel: skill.minLevel,
       createdAt: skill.createdAt,

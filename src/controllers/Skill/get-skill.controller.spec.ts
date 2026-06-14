@@ -15,7 +15,7 @@ describe('GET /skills/:skillId (GetSkillController)', () => {
 
   async function createPowerAndSkill() {
     const power = await prisma.power.create({
-      data: { name: 'Fire', description: 'Fire-based power' },
+      data: { name: 'Fire', description: 'Fire-based power', canAwaken: false, isAwakened: false, pillar: 'BIOLOGICA' },
     })
 
     const skill = await prisma.skill.create({
@@ -23,7 +23,10 @@ describe('GET /skills/:skillId (GetSkillController)', () => {
         name: 'Fireball',
         description: 'Launches a fireball',
         limitation: 'Once per turn',
-        cost: 3,
+        cooldownTurns: 2,
+        debuffStat: 'HP',
+        debuffValue: 10,
+        debuffDuration: 2,
         minLevel: 5,
         powerId: power.id,
       },
@@ -43,7 +46,10 @@ describe('GET /skills/:skillId (GetSkillController)', () => {
       name: 'Fireball',
       description: 'Launches a fireball',
       limitation: 'Once per turn',
-      cost: 3,
+      cooldownTurns: 2,
+      debuffStat: 'HP',
+      debuffValue: 10,
+      debuffDuration: 2,
       minLevel: 5,
       powerId: power.id,
       createdAt: expect.any(String),

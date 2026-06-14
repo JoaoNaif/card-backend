@@ -49,7 +49,13 @@ describe('POST /skills (CreateSkillController)', () => {
 
   async function createPower() {
     return prisma.power.create({
-      data: { name: 'Fire', description: 'Fire-based power' },
+      data: {
+        name: 'Fire',
+        description: 'Fire-based power',
+        canAwaken: false,
+        isAwakened: false,
+        pillar: 'BIOLOGICA',
+      },
     })
   }
 
@@ -64,7 +70,10 @@ describe('POST /skills (CreateSkillController)', () => {
         name: 'Fireball',
         description: 'Launches a fireball',
         limitation: 'Once per turn',
-        cost: 3,
+        cooldownTurns: 2,
+        debuffStat: 'HP',
+        debuffValue: 10,
+        debuffDuration: 2,
         minLevel: 5,
         powerId: power.id,
       })
@@ -75,7 +84,10 @@ describe('POST /skills (CreateSkillController)', () => {
       name: 'Fireball',
       description: 'Launches a fireball',
       limitation: 'Once per turn',
-      cost: 3,
+      cooldownTurns: 2,
+      debuffStat: 'HP',
+      debuffValue: 10,
+      debuffDuration: 2,
       minLevel: 5,
       powerId: power.id,
       createdAt: expect.any(String),
@@ -86,17 +98,17 @@ describe('POST /skills (CreateSkillController)', () => {
     const cookie = await createAdminAndGetCookie()
     const power = await createPower()
 
-    await request(app)
-      .post('/skills')
-      .set('Cookie', cookie)
-      .send({
-        name: 'Fireball',
-        description: 'Launches a fireball',
-        limitation: 'Once per turn',
-        cost: 3,
-        minLevel: 5,
-        powerId: power.id,
-      })
+    await request(app).post('/skills').set('Cookie', cookie).send({
+      name: 'Fireball',
+      description: 'Launches a fireball',
+      limitation: 'Once per turn',
+      cooldownTurns: 2,
+      debuffStat: 'HP',
+      debuffValue: 10,
+      debuffDuration: 2,
+      minLevel: 5,
+      powerId: power.id,
+    })
 
     const response = await request(app)
       .post('/skills')
@@ -105,7 +117,10 @@ describe('POST /skills (CreateSkillController)', () => {
         name: 'Fireball',
         description: 'Another fireball',
         limitation: 'Once per turn',
-        cost: 2,
+        cooldownTurns: 1,
+        debuffStat: 'ATK',
+        debuffValue: 5,
+        debuffDuration: 1,
         minLevel: 1,
         powerId: power.id,
       })
@@ -124,7 +139,10 @@ describe('POST /skills (CreateSkillController)', () => {
         name: 'Fireball',
         description: 'Launches a fireball',
         limitation: 'Once per turn',
-        cost: 3,
+        cooldownTurns: 2,
+        debuffStat: 'HP',
+        debuffValue: 10,
+        debuffDuration: 2,
         minLevel: 5,
         powerId: 'non-existent-id',
       })
@@ -144,7 +162,10 @@ describe('POST /skills (CreateSkillController)', () => {
         name: 'Fireball',
         description: 'Launches a fireball',
         limitation: 'Once per turn',
-        cost: 3,
+        cooldownTurns: 2,
+        debuffStat: 'HP',
+        debuffValue: 10,
+        debuffDuration: 2,
         minLevel: 5,
         powerId: power.id,
       })
@@ -156,16 +177,17 @@ describe('POST /skills (CreateSkillController)', () => {
   it('should return 401 when not authenticated', async () => {
     const power = await createPower()
 
-    const response = await request(app)
-      .post('/skills')
-      .send({
-        name: 'Fireball',
-        description: 'Launches a fireball',
-        limitation: 'Once per turn',
-        cost: 3,
-        minLevel: 5,
-        powerId: power.id,
-      })
+    const response = await request(app).post('/skills').send({
+      name: 'Fireball',
+      description: 'Launches a fireball',
+      limitation: 'Once per turn',
+      cooldownTurns: 2,
+      debuffStat: 'HP',
+      debuffValue: 10,
+      debuffDuration: 2,
+      minLevel: 5,
+      powerId: power.id,
+    })
 
     expect(response.status).toBe(401)
     expect(response.body.message).toBeDefined()
@@ -181,6 +203,7 @@ describe('POST /skills (CreateSkillController)', () => {
       .send({
         name: 'Fireball',
         powerId: power.id,
+        // missing: description, limitation, cooldownTurns, debuffStat, debuffValue, debuffDuration, minLevel
       })
 
     expect(response.status).toBe(400)
