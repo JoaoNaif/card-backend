@@ -14,6 +14,8 @@ export interface DtoCharacterRaw {
   baseAtk: number
   baseDef: number
   baseSpd: number
+  secondaryPowerId?: string | null | undefined
+  awakenedPowerId?: string | null | undefined
   powerId: string
   traits: { id: string; name: string }[]
   createdAt: Date

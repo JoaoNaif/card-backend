@@ -21,6 +21,8 @@ interface CreateCharacterUseCaseRequest {
   baseAtk: number
   baseDef: number
   baseSpd: number
+  secondaryPowerId?: string | null | undefined
+  awakenedPowerId?: string | null | undefined
   powerId: string
 }
 
@@ -51,6 +53,8 @@ export class CreateCharacterUseCase {
     maxRanking,
     ranking,
     xp,
+    awakenedPowerId,
+    secondaryPowerId,
     powerId,
   }: CreateCharacterUseCaseRequest): Promise<CreateCharacterUseCaseResponse> {
     const user = await this.userRepository.findById(adminId)
@@ -88,6 +92,8 @@ export class CreateCharacterUseCase {
       maxRanking,
       ranking,
       xp,
+      awakenedPowerId,
+      secondaryPowerId,
       powerId: power.id.toString(),
     })
 
@@ -108,6 +114,8 @@ export class CreateCharacterUseCase {
         ranking: character.ranking,
         xp: character.xp,
         userId: character.userId,
+        awakenedPowerId: character.awakenedPowerId,
+        secondaryPowerId: character.secondaryPowerId,
         powerId: character.powerId,
         traits: [] as { id: string; name: string }[],
         createdAt: character.createdAt,

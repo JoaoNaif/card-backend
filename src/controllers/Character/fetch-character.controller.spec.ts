@@ -16,7 +16,7 @@ describe('GET /characters (FetchCharacterController)', () => {
   })
 
   async function createPower(name = 'Fire', description = 'Fire-based power') {
-    return prisma.power.create({ data: { name, description } })
+    return prisma.power.create({ data: { name, description, pillar: 'MATERIAL' } })
   }
 
   function characterData(powerId: string, name: string) {

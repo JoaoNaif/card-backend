@@ -31,7 +31,7 @@ describe('PATCH /characters/acquire (AcquireCharacterController)', () => {
 
   async function createCharacter() {
     const power = await prisma.power.create({
-      data: { name: 'Fire', description: 'Fire-based power' },
+      data: { name: 'Fire', description: 'Fire-based power', pillar: 'MATERIAL' },
     })
 
     return prisma.character.create({
@@ -95,7 +95,7 @@ describe('PATCH /characters/acquire (AcquireCharacterController)', () => {
     })
 
     const power = await prisma.power.create({
-      data: { name: 'Fire', description: 'Fire-based power' },
+      data: { name: 'Fire', description: 'Fire-based power', pillar: 'MATERIAL' },
     })
 
     await Promise.all(

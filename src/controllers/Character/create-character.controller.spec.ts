@@ -50,7 +50,7 @@ describe('POST /characters (CreateCharacterController)', () => {
 
   async function createPower() {
     return prisma.power.create({
-      data: { name: 'Fire', description: 'Fire-based power' },
+      data: { name: 'Fire', description: 'Fire-based power', pillar: 'MATERIAL' },
     })
   }
 

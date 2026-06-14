@@ -32,7 +32,7 @@ describe('PATCH /characters/assign-trait (AssignTraitController)', () => {
 
   async function createCharacterOwnedByUser(userId: string) {
     const power = await prisma.power.create({
-      data: { name: 'Fire', description: 'Fire-based power' },
+      data: { name: 'Fire', description: 'Fire-based power', pillar: 'MATERIAL' },
     })
 
     return prisma.character.create({

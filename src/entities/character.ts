@@ -22,7 +22,7 @@ const RANKING_MAX_LEVEL: Record<Ranking, number> = {
   [Ranking.CAOTICO]: 100,
 }
 
-const GROWTH_RATE = 0.10
+const GROWTH_RATE = 0.1
 
 export interface CharacterProps {
   name: string
@@ -37,6 +37,8 @@ export interface CharacterProps {
   baseAtk: number
   baseDef: number
   baseSpd: number
+  secondaryPowerId?: string | null | undefined
+  awakenedPowerId?: string | null | undefined
   powerId: string
   traits?: { id: string; name: string }[]
   createdAt: Date
@@ -111,6 +113,14 @@ export class Character extends Entity<CharacterProps> {
     return this.props.baseSpd
   }
 
+  get secondaryPowerId() {
+    return this.props.secondaryPowerId
+  }
+
+  get awakenedPowerId() {
+    return this.props.awakenedPowerId
+  }
+
   get traits(): { id: string; name: string }[] {
     return this.props.traits ?? []
   }
@@ -147,7 +157,10 @@ export class Character extends Entity<CharacterProps> {
     this.props.xp += amount
     let levelsGained = 0
 
-    while (this.props.level < this.maxLevel && this.props.xp >= this.xpToNextLevel) {
+    while (
+      this.props.level < this.maxLevel &&
+      this.props.xp >= this.xpToNextLevel
+    ) {
       this.props.xp -= this.xpToNextLevel
       this.props.level++
       levelsGained++

@@ -20,7 +20,7 @@ describe('PATCH /characters/gain-xp (GainXpController)', () => {
     ranking: Ranking
   }> = {}) {
     const power = await prisma.power.create({
-      data: { name: 'Power Test', description: 'Test power' },
+      data: { name: 'Power Test', description: 'Test power', pillar: 'MATERIAL' },
     })
 
     return prisma.character.create({

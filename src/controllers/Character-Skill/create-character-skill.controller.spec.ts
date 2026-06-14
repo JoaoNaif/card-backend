@@ -33,14 +33,16 @@ describe('POST /character-skills (CreateCharacterSkillController)', () => {
 
   async function createPowerAndSkill() {
     const power = await prisma.power.create({
-      data: { name: 'Fire', description: 'Fire-based power' },
+      data: { name: 'Fire', description: 'Fire-based power', pillar: 'MATERIAL' },
     })
     const skill = await prisma.skill.create({
       data: {
         name: 'Fireball',
         description: 'Launches a fireball',
         limitation: 'Once per turn',
-        cost: 3,
+        debuffStat: 'HP',
+        debuffValue: 10,
+        debuffDuration: 2,
         minLevel: 1,
         powerId: power.id,
       },
