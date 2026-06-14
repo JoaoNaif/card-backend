@@ -38,7 +38,7 @@ describe('PATCH /characters/acquire (AcquireCharacterController)', () => {
       data: {
         name: 'Kai',
         description: 'A powerful warrior',
-        maxRanking: Ranking.ANCESTRAL,
+        maxRanking: Ranking.CAOTICO,
         baseHp: 100,
         baseAtk: 50,
         baseDef: 30,
@@ -104,7 +104,7 @@ describe('PATCH /characters/acquire (AcquireCharacterController)', () => {
           data: {
             name: `Character ${i}`,
             description: 'A warrior',
-            maxRanking: Ranking.ANCESTRAL,
+            maxRanking: Ranking.CAOTICO,
             baseHp: 100,
             baseAtk: 50,
             baseDef: 30,
@@ -120,7 +120,7 @@ describe('PATCH /characters/acquire (AcquireCharacterController)', () => {
       data: {
         name: 'Extra',
         description: 'One too many',
-        maxRanking: Ranking.ANCESTRAL,
+        maxRanking: Ranking.CAOTICO,
         baseHp: 100,
         baseAtk: 50,
         baseDef: 30,

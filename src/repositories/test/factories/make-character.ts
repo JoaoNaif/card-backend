@@ -10,8 +10,8 @@ export function makeCharacter(
     {
       name: faker.person.fullName(),
       description: faker.lorem.paragraph(),
-      ranking: Ranking.MORTAL,
-      maxRanking: Ranking.LENDARIO,
+      ranking: Ranking.DISCRETO,
+      maxRanking: Ranking.SINGULAR,
       level: 1,
       xp: 0,
       breakthroughAttempts: 0,

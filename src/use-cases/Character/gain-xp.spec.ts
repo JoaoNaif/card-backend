@@ -74,8 +74,8 @@ describe('GainXpUseCase', () => {
   })
 
   it('should cap at maxLevel and discard excess xp', async () => {
-    // MORTAL tem teto 20, coloca no nível 19 para subir ao teto
-    const character = makeCharacter({ ranking: Ranking.MORTAL, level: 19, xp: 0 })
+    // DISCRETO tem teto 20, coloca no nível 19 para subir ao teto
+    const character = makeCharacter({ ranking: Ranking.DISCRETO, level: 19, xp: 0 })
     await characterRepository.create(character)
 
     // nível 19 precisa de 1900 xp — envia bem mais
@@ -90,7 +90,7 @@ describe('GainXpUseCase', () => {
   })
 
   it('should not gain levels when already at maxLevel', async () => {
-    const character = makeCharacter({ ranking: Ranking.MORTAL, level: 20, xp: 0 })
+    const character = makeCharacter({ ranking: Ranking.DISCRETO, level: 20, xp: 0 })
     await characterRepository.create(character)
 
     const result = await sut.execute({

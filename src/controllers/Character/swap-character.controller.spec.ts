@@ -45,7 +45,7 @@ describe('PATCH /characters/swap (SwapCharacterController)', () => {
       data: {
         name: `Character-${++charCounter}`,
         description: 'A powerful warrior',
-        maxRanking: Ranking.ANCESTRAL,
+        maxRanking: Ranking.CAOTICO,
         baseHp: 100,
         baseAtk: 50,
         baseDef: 30,

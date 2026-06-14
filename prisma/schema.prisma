@@ -16,13 +16,13 @@ enum UserRole {
 }
 
 enum Ranking {
-  MORTAL
-  DESBRAVADOR
-  HEROI
-  EPICO
-  LENDARIO
-  MITICO
-  ANCESTRAL
+  DISCRETO
+  CONTINUO
+  DIFERENCIAVEL
+  NAO_LINEAR
+  SINGULAR
+  DIVERGENTE
+  CAOTICO
 }
 
 enum StatType {
@@ -109,7 +109,7 @@ model Character {
   description String
   userId      String?
 
-  ranking              Ranking @default(MORTAL)
+  ranking              Ranking @default(DISCRETO)
   maxRanking           Ranking
   level                Int     @default(1)
   xp                   Int     @default(0)

@@ -27,7 +27,7 @@ describe('PATCH /characters/gain-xp (GainXpController)', () => {
       data: {
         name: 'Test Hero',
         description: 'A test character',
-        maxRanking: Ranking.ANCESTRAL,
+        maxRanking: Ranking.CAOTICO,
         baseHp: 100,
         baseAtk: 50,
         baseDef: 30,
@@ -35,7 +35,7 @@ describe('PATCH /characters/gain-xp (GainXpController)', () => {
         powerId: power.id,
         level: override.level ?? 1,
         xp: override.xp ?? 0,
-        ranking: override.ranking ?? Ranking.MORTAL,
+        ranking: override.ranking ?? Ranking.DISCRETO,
       },
     })
   }
@@ -84,7 +84,7 @@ describe('PATCH /characters/gain-xp (GainXpController)', () => {
   })
 
   it('should cap at maxLevel and discard excess XP', async () => {
-    const character = await createCharacter({ ranking: Ranking.MORTAL, level: 19 })
+    const character = await createCharacter({ ranking: Ranking.DISCRETO, level: 19 })
 
     const response = await request(app)
       .patch('/characters/gain-xp')

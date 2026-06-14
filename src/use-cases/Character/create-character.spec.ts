@@ -46,8 +46,8 @@ describe('CreateCharacterUseCase', () => {
       baseSpd: 5,
       breakthroughAttempts: 0,
       level: 10,
-      maxRanking: Ranking.ANCESTRAL,
-      ranking: Ranking.MITICO,
+      maxRanking: Ranking.CAOTICO,
+      ranking: Ranking.DIVERGENTE,
       xp: 10,
       powerId: power.id.toString(),
     })
@@ -76,8 +76,8 @@ describe('CreateCharacterUseCase', () => {
       baseSpd: 5,
       breakthroughAttempts: 0,
       level: 10,
-      maxRanking: Ranking.ANCESTRAL,
-      ranking: Ranking.MITICO,
+      maxRanking: Ranking.CAOTICO,
+      ranking: Ranking.DIVERGENTE,
       xp: 10,
       powerId: 'non power',
     })
@@ -105,8 +105,8 @@ describe('CreateCharacterUseCase', () => {
       baseSpd: 5,
       breakthroughAttempts: 0,
       level: 10,
-      maxRanking: Ranking.ANCESTRAL,
-      ranking: Ranking.MITICO,
+      maxRanking: Ranking.CAOTICO,
+      ranking: Ranking.DIVERGENTE,
       xp: 10,
       powerId: 'non power',
     })
@@ -130,8 +130,8 @@ describe('CreateCharacterUseCase', () => {
       baseSpd: 5,
       breakthroughAttempts: 0,
       level: 10,
-      maxRanking: Ranking.ANCESTRAL,
-      ranking: Ranking.MITICO,
+      maxRanking: Ranking.CAOTICO,
+      ranking: Ranking.DIVERGENTE,
       xp: 10,
       powerId: 'non power',
     })

@@ -3,34 +3,26 @@ import type { UniqueEntityId } from '../core/entities/unique-entity-id'
 import type { Optional } from '../core/type/optional'
 
 export enum Ranking {
-  MORTAL = 'MORTAL',
-  DESBRAVADOR = 'DESBRAVADOR',
-  HEROI = 'HEROI',
-  EPICO = 'EPICO',
-  LENDARIO = 'LENDARIO',
-  MITICO = 'MITICO',
-  ANCESTRAL = 'ANCESTRAL',
+  DISCRETO = 'DISCRETO',
+  CONTINUO = 'CONTINUO',
+  DIFERENCIAVEL = 'DIFERENCIAVEL',
+  NAO_LINEAR = 'NAO_LINEAR',
+  SINGULAR = 'SINGULAR',
+  DIVERGENTE = 'DIVERGENTE',
+  CAOTICO = 'CAOTICO',
 }
 
 const RANKING_MAX_LEVEL: Record<Ranking, number> = {
-  [Ranking.MORTAL]: 20,
-  [Ranking.DESBRAVADOR]: 40,
-  [Ranking.HEROI]: 60,
-  [Ranking.EPICO]: 80,
-  [Ranking.LENDARIO]: 100,
-  [Ranking.MITICO]: 100,
-  [Ranking.ANCESTRAL]: 100,
+  [Ranking.DISCRETO]: 20,
+  [Ranking.CONTINUO]: 40,
+  [Ranking.DIFERENCIAVEL]: 60,
+  [Ranking.NAO_LINEAR]: 80,
+  [Ranking.SINGULAR]: 100,
+  [Ranking.DIVERGENTE]: 100,
+  [Ranking.CAOTICO]: 100,
 }
 
-const RANKING_GROWTH_RATE: Record<Ranking, number> = {
-  [Ranking.MORTAL]: 0.08,
-  [Ranking.DESBRAVADOR]: 0.11,
-  [Ranking.HEROI]: 0.15,
-  [Ranking.EPICO]: 0.20,
-  [Ranking.LENDARIO]: 0.26,
-  [Ranking.MITICO]: 0.33,
-  [Ranking.ANCESTRAL]: 0.42,
-}
+const GROWTH_RATE = 0.10
 
 export interface CharacterProps {
   name: string
@@ -148,8 +140,7 @@ export class Character extends Entity<CharacterProps> {
   }
 
   private calcEffective(base: number): number {
-    const rate = RANKING_GROWTH_RATE[this.props.ranking]
-    return base + Math.floor(base * rate * (this.props.level - 1))
+    return base + Math.floor(base * GROWTH_RATE * (this.props.level - 1))
   }
 
   gainXp(amount: number): number {

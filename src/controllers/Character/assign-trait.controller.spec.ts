@@ -39,7 +39,7 @@ describe('PATCH /characters/assign-trait (AssignTraitController)', () => {
       data: {
         name: 'Test Hero',
         description: 'A test character',
-        maxRanking: Ranking.ANCESTRAL,
+        maxRanking: Ranking.CAOTICO,
         baseHp: 100,
         baseAtk: 50,
         baseDef: 30,
