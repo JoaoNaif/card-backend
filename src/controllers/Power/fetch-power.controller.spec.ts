@@ -23,8 +23,20 @@ describe('GET /powers (FetchPowerController)', () => {
   it('should return 200 with a list of powers', async () => {
     await prisma.power.createMany({
       data: [
-        { name: 'Fire', description: 'Fire-based attacks' },
-        { name: 'Ice', description: 'Ice-based attacks' },
+        {
+          name: 'Fire',
+          description: 'Fire-based attacks',
+          canAwaken: false,
+          isAwakened: false,
+          pillar: 'BIOLOGICA',
+        },
+        {
+          name: 'Ice',
+          description: 'Ice-based attacks',
+          canAwaken: false,
+          isAwakened: false,
+          pillar: 'BIOLOGICA',
+        },
       ],
     })
 
@@ -34,14 +46,28 @@ describe('GET /powers (FetchPowerController)', () => {
     expect(response.body).toHaveLength(2)
     expect(response.body).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ name: 'Fire', description: 'Fire-based attacks' }),
-        expect.objectContaining({ name: 'Ice', description: 'Ice-based attacks' }),
+        expect.objectContaining({
+          name: 'Fire',
+          description: 'Fire-based attacks',
+        }),
+        expect.objectContaining({
+          name: 'Ice',
+          description: 'Ice-based attacks',
+        }),
       ])
     )
   })
 
   it('each power should have id, name, description and createdAt fields', async () => {
-    await prisma.power.create({ data: { name: 'Fire', description: 'Fire-based attacks' } })
+    await prisma.power.create({
+      data: {
+        name: 'Fire',
+        description: 'Fire-based attacks',
+        canAwaken: false,
+        isAwakened: false,
+        pillar: 'BIOLOGICA',
+      },
+    })
 
     const response = await request(app).get('/powers')
 
@@ -57,8 +83,20 @@ describe('GET /powers (FetchPowerController)', () => {
   it('should filter powers by search query', async () => {
     await prisma.power.createMany({
       data: [
-        { name: 'Fire', description: 'Fire-based attacks' },
-        { name: 'Ice', description: 'Ice-based attacks' },
+        {
+          name: 'Fire',
+          description: 'Fire-based attacks',
+          canAwaken: false,
+          isAwakened: false,
+          pillar: 'BIOLOGICA',
+        },
+        {
+          name: 'Ice',
+          description: 'Ice-based attacks',
+          canAwaken: false,
+          isAwakened: false,
+          pillar: 'BIOLOGICA',
+        },
       ],
     })
 
@@ -74,6 +112,9 @@ describe('GET /powers (FetchPowerController)', () => {
       data: Array.from({ length: 15 }, (_, i) => ({
         name: `Power ${i + 1}`,
         description: `Description ${i + 1}`,
+        canAwaken: false,
+        isAwakened: false,
+        pillar: 'BIOLOGICA',
       })),
     })
 

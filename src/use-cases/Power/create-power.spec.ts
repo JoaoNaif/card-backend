@@ -7,6 +7,7 @@ import { UnauthorizedError } from '../../core/error/err/unauthorized-error'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import { CreatePowerUseCase } from './create-power'
 import { InMemoryPowerRepository } from '../../repositories/test/in-memory-power-repository'
+import { Pillar } from '../../entities/power'
 
 let userRepository: InMemoryUserRepository
 let powerRepository: InMemoryPowerRepository
@@ -28,6 +29,9 @@ describe('CreatePowerUseCase', () => {
       userId: user.id.toString(),
       name: 'Fire',
       description: 'Fire attack',
+      canAwaken: false,
+      isAwakened: false,
+      pillar: Pillar.BIOLOGICA,
     })
 
     expect(result.isRight()).toBe(true)
@@ -36,6 +40,50 @@ describe('CreatePowerUseCase', () => {
     if (result.isRight()) {
       expect(result.value.power.name).toBe('Fire')
       expect(result.value.power.description).toBe('Fire attack')
+    }
+  })
+
+  it('should create a power can awaken successfully', async () => {
+    const user = makeUser({ userRole: UserRole.ADMIN })
+
+    await userRepository.create(user)
+
+    const result = await sut.execute({
+      userId: user.id.toString(),
+      name: 'Fire',
+      description: 'Fire attack',
+      canAwaken: true,
+      isAwakened: false,
+      pillar: Pillar.BIOLOGICA,
+    })
+
+    expect(result.isRight()).toBe(true)
+    expect(userRepository.items).toHaveLength(1)
+
+    if (result.isRight()) {
+      expect(result.value.power.canAwaken).toBe(true)
+    }
+  })
+
+  it('should create a power is awaken successfully', async () => {
+    const user = makeUser({ userRole: UserRole.ADMIN })
+
+    await userRepository.create(user)
+
+    const result = await sut.execute({
+      userId: user.id.toString(),
+      name: 'Fire',
+      description: 'Fire attack',
+      canAwaken: false,
+      isAwakened: true,
+      pillar: Pillar.BIOLOGICA,
+    })
+
+    expect(result.isRight()).toBe(true)
+    expect(userRepository.items).toHaveLength(1)
+
+    if (result.isRight()) {
+      expect(result.value.power.isAwakened).toBe(true)
     }
   })
 
@@ -48,6 +96,9 @@ describe('CreatePowerUseCase', () => {
       userId: user.id.toString(),
       name: 'Brave',
       description: 'A brave trait',
+      canAwaken: false,
+      isAwakened: false,
+      pillar: Pillar.BIOLOGICA,
     })
 
     expect(result.isLeft()).toBe(true)
@@ -59,6 +110,9 @@ describe('CreatePowerUseCase', () => {
       userId: 'non-existing-user-id',
       name: 'Brave',
       description: 'A brave trait',
+      canAwaken: false,
+      isAwakened: false,
+      pillar: Pillar.BIOLOGICA,
     })
 
     expect(result.isLeft()).toBe(true)

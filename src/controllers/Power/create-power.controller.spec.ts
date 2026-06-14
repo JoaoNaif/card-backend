@@ -52,7 +52,13 @@ describe('POST /powers (CreatePowerController)', () => {
     const response = await request(app)
       .post('/powers')
       .set('Cookie', cookie)
-      .send({ name: 'Fire', description: 'Fire-based attacks' })
+      .send({
+        name: 'Fire',
+        description: 'Fire-based attacks',
+        canAwaken: false,
+        isAwakened: false,
+        pillar: 'BIOLOGICA',
+      })
 
     expect(response.status).toBe(201)
     expect(response.body).toMatchObject({
@@ -67,7 +73,13 @@ describe('POST /powers (CreatePowerController)', () => {
     const cookie = await createAdminAndGetCookie()
 
     await prisma.power.create({
-      data: { name: 'Fire', description: 'Fire-based attacks' },
+      data: {
+        name: 'Fire',
+        description: 'Fire-based attacks',
+        canAwaken: false,
+        isAwakened: false,
+        pillar: 'BIOLOGICA',
+      },
     })
 
     const response = await request(app)

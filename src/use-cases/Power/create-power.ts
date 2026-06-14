@@ -2,7 +2,7 @@ import { left, right, type Either } from '../../core/either'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import { ResourceAlreadyExistError } from '../../core/error/err/resource-already-exist-error'
 import { UnauthorizedError } from '../../core/error/err/unauthorized-error'
-import { Power } from '../../entities/power'
+import { Pillar, Power } from '../../entities/power'
 import type { IPowerRepository } from '../../repositories/interface/power-repository'
 import type { IUserRepository } from '../../repositories/interface/user-repository'
 import type { DtoPowerRaw } from './dtos/dto-power-raw'
@@ -11,6 +11,9 @@ interface CreatePowerUseCaseRequest {
   userId: string
   name: string
   description: string
+  pillar: Pillar
+  canAwaken: boolean
+  isAwakened: boolean
 }
 
 type CreatePowerUseCaseResponse = Either<
@@ -30,6 +33,9 @@ export class CreatePowerUseCase {
     userId,
     name,
     description,
+    canAwaken,
+    isAwakened,
+    pillar,
   }: CreatePowerUseCaseRequest): Promise<CreatePowerUseCaseResponse> {
     const user = await this.userRepository.findById(userId)
 
@@ -50,6 +56,9 @@ export class CreatePowerUseCase {
     const power = Power.create({
       name,
       description,
+      canAwaken,
+      isAwakened,
+      pillar,
     })
 
     await this.powerRepository.create(power)
@@ -59,6 +68,9 @@ export class CreatePowerUseCase {
         id: power.id.toString(),
         name: power.name,
         description: power.description,
+        canAwaken: power.canAwaken,
+        pillar: power.pillar,
+        isAwakened: power.isAwakened,
         createdAt: power.createdAt,
       },
     })

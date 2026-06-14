@@ -1,6 +1,6 @@
 import { faker } from '@faker-js/faker'
 import type { UniqueEntityId } from '../../../core/entities/unique-entity-id'
-import { Power, type PowerProps } from '../../../entities/power'
+import { Pillar, Power, type PowerProps } from '../../../entities/power'
 
 export function makePower(
   override: Partial<PowerProps> = {},
@@ -10,6 +10,9 @@ export function makePower(
     {
       name: faker.person.fullName(),
       description: faker.lorem.paragraph(),
+      canAwaken: false,
+      isAwakened: false,
+      pillar: Pillar.BIOLOGICA,
       ...override,
     },
     id

@@ -30,6 +30,9 @@ export class FetchPowerUseCase {
         id: power.id.toString(),
         name: power.name,
         description: power.description,
+        canAwaken: power.canAwaken,
+        pillar: power.pillar,
+        isAwakened: power.isAwakened,
         createdAt: power.createdAt,
       })),
     })

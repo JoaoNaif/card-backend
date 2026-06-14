@@ -1,5 +1,5 @@
 import { UniqueEntityId } from '../../../core/entities/unique-entity-id'
-import { Power } from '../../../entities/power'
+import { Pillar, Power } from '../../../entities/power'
 import type { Power as PowerPrisma } from '../../../generated/prisma'
 
 export class PrismaPowerMapper {
@@ -9,6 +9,9 @@ export class PrismaPowerMapper {
         name: power.name,
         description: power.description,
         createdAt: power.createdAt,
+        canAwaken: power.canAwaken,
+        isAwakened: power.isAwakened,
+        pillar: power.pillar as Pillar,
       },
       new UniqueEntityId(power.id)
     )
@@ -19,6 +22,9 @@ export class PrismaPowerMapper {
       id: power.id.toString(),
       name: power.name,
       description: power.description,
+      canAwaken: power.canAwaken,
+      isAwakened: power.isAwakened,
+      pillar: power.pillar,
       createdAt: power.createdAt,
     }
   }
@@ -27,6 +33,9 @@ export class PrismaPowerMapper {
     return {
       name: power.name,
       description: power.description,
+      canAwaken: power.canAwaken,
+      isAwakened: power.isAwakened,
+      pillar: power.pillar,
       createdAt: power.createdAt,
     }
   }
