@@ -25,6 +25,14 @@ enum Ranking {
   CAOTICO
 }
 
+enum Pillar {
+  MATERIAL
+  VETORIAL
+  BIOLOGICA
+  PSIQUICA
+  FUNDAMENTAL
+}
+
 enum StatType {
   HP
   ATK
@@ -58,12 +66,29 @@ model Trait {
 }
 
 model Power {
-  id          String      @id @default(cuid())
-  name        String      @unique
-  description String
-  skills      Skill[]
-  characters  Character[]
-  createdAt   DateTime    @default(now())
+  id                  String           @id @default(cuid())
+  name                String           @unique
+  description         String
+  pillar              Pillar
+  canAwaken           Boolean          @default(false)
+  isAwakened          Boolean          @default(false)
+  skills              Skill[]
+  primaryCharacters   Character[]      @relation("PrimaryPower")
+  secondaryCharacters Character[]      @relation("SecondaryPower")
+  awakenedCharacters  Character[]      @relation("AwakenedPower")
+  awakeningTargets    PowerAwakening[] @relation("BaseAwakening")
+  awakeningSourceOf   PowerAwakening[] @relation("AwakenedResult")
+  createdAt           DateTime         @default(now())
+}
+
+model PowerAwakening {
+  id              String @id @default(cuid())
+  basePowerId     String
+  awakenedPowerId String
+  basePower       Power  @relation("BaseAwakening", fields: [basePowerId], references: [id])
+  awakenedPower   Power  @relation("AwakenedResult", fields: [awakenedPowerId], references: [id])
+
+  @@unique([basePowerId, awakenedPowerId])
 }
 
 model Skill {
@@ -71,7 +96,10 @@ model Skill {
   name                 String           @unique
   description          String
   limitation           String
-  cost                 Int
+  cooldownTurns        Int              @default(0)
+  debuffStat           StatType
+  debuffValue          Float
+  debuffDuration       Int
   minLevel             Int
   powerId              String
   appliesBattleFieldId String?
@@ -120,13 +148,17 @@ model Character {
   baseDef Int
   baseSpd Int
 
-  powerId String
-  power   Power            @relation(fields: [powerId], references: [id])
-  user    User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
-  traits  Trait[]
-  skills  CharacterSkill[]
+  secondaryPowerId String?
+  awakenedPowerId  String?
+  powerId          String
+  user             User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  traits           Trait[]
+  skills           CharacterSkill[]
 
-  createdAt DateTime @default(now())
+  createdAt      DateTime @default(now())
+  power          Power    @relation("PrimaryPower", fields: [powerId], references: [id])
+  secondaryPower Power?   @relation("SecondaryPower", fields: [secondaryPowerId], references: [id])
+  awakenedPower  Power?   @relation("AwakenedPower", fields: [awakenedPowerId], references: [id])
 }
 
 model CharacterSkill {
