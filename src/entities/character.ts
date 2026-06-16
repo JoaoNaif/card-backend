@@ -40,6 +40,7 @@ export interface CharacterProps {
   secondaryPowerId?: string | null | undefined
   awakenedPowerId?: string | null | undefined
   powerId: string
+  pendingSkillSelections: number
   traits?: { id: string; name: string }[]
   createdAt: Date
 }
@@ -117,12 +118,20 @@ export class Character extends Entity<CharacterProps> {
     return this.props.secondaryPowerId
   }
 
-  get awakenedPowerId() {
+  get awakenedPowerId(): string | null | undefined {
     return this.props.awakenedPowerId
   }
 
-  set awakenedPowerId(id: string) {
+  set awakenedPowerId(id: string | null | undefined) {
     this.props.awakenedPowerId = id
+  }
+
+  get pendingSkillSelections() {
+    return this.props.pendingSkillSelections
+  }
+
+  set pendingSkillSelections(n: number) {
+    this.props.pendingSkillSelections = n
   }
 
   get traits(): { id: string; name: string }[] {
@@ -186,13 +195,14 @@ export class Character extends Entity<CharacterProps> {
   }
 
   static create(
-    props: Optional<CharacterProps, 'createdAt'>,
+    props: Optional<CharacterProps, 'createdAt' | 'pendingSkillSelections'>,
     id?: UniqueEntityId
   ) {
     const character = new Character(
       {
         ...props,
         createdAt: props.createdAt ?? new Date(),
+        pendingSkillSelections: props.pendingSkillSelections ?? 0,
       },
       id
     )

@@ -43,7 +43,7 @@ describe('GainXpUseCase', () => {
     const result = await sut.execute({ characterId: character.id.toString(), xpAmount: 50 })
 
     expect(result.isRight()).toBe(true)
-    expect(result.value).toEqual({ levelsGained: 0, newLevel: 1, awakened: false })
+    expect(result.value).toEqual({ levelsGained: 0, newLevel: 1, awakened: false, pendingSkillSelections: 0 })
     expect(characterRepository.items[0]?.xp).toBe(50)
   })
 
@@ -54,7 +54,7 @@ describe('GainXpUseCase', () => {
     const result = await sut.execute({ characterId: character.id.toString(), xpAmount: 100 })
 
     expect(result.isRight()).toBe(true)
-    expect(result.value).toEqual({ levelsGained: 1, newLevel: 2, awakened: false })
+    expect(result.value).toEqual({ levelsGained: 1, newLevel: 2, awakened: false, pendingSkillSelections: 0 })
     expect(characterRepository.items[0]?.xp).toBe(0)
   })
 
@@ -65,7 +65,7 @@ describe('GainXpUseCase', () => {
     const result = await sut.execute({ characterId: character.id.toString(), xpAmount: 600 })
 
     expect(result.isRight()).toBe(true)
-    expect(result.value).toEqual({ levelsGained: 3, newLevel: 4, awakened: false })
+    expect(result.value).toEqual({ levelsGained: 3, newLevel: 4, awakened: false, pendingSkillSelections: 0 })
     expect(characterRepository.items[0]?.xp).toBe(0)
   })
 
@@ -76,7 +76,7 @@ describe('GainXpUseCase', () => {
     const result = await sut.execute({ characterId: character.id.toString(), xpAmount: 150 })
 
     expect(result.isRight()).toBe(true)
-    expect(result.value).toEqual({ levelsGained: 1, newLevel: 2, awakened: false })
+    expect(result.value).toEqual({ levelsGained: 1, newLevel: 2, awakened: false, pendingSkillSelections: 0 })
     expect(characterRepository.items[0]?.xp).toBe(50)
   })
 
@@ -87,7 +87,7 @@ describe('GainXpUseCase', () => {
     const result = await sut.execute({ characterId: character.id.toString(), xpAmount: 9999 })
 
     expect(result.isRight()).toBe(true)
-    expect(result.value).toEqual({ levelsGained: 1, newLevel: 20, awakened: false })
+    expect(result.value).toEqual({ levelsGained: 1, newLevel: 20, awakened: false, pendingSkillSelections: 1 })
     expect(characterRepository.items[0]?.xp).toBe(0)
   })
 
@@ -97,7 +97,7 @@ describe('GainXpUseCase', () => {
     const result = await sut.execute({ characterId: character.id.toString(), xpAmount: 9999 })
 
     expect(result.isRight()).toBe(true)
-    expect(result.value).toEqual({ levelsGained: 0, newLevel: 20, awakened: false })
+    expect(result.value).toEqual({ levelsGained: 0, newLevel: 20, awakened: false, pendingSkillSelections: 0 })
     expect(characterRepository.items[0]?.xp).toBe(0)
   })
 

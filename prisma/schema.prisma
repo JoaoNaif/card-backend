@@ -137,11 +137,12 @@ model Character {
   description String
   userId      String?
 
-  ranking              Ranking @default(DISCRETO)
-  maxRanking           Ranking
-  level                Int     @default(1)
-  xp                   Int     @default(0)
-  breakthroughAttempts Int     @default(0)
+  ranking                Ranking @default(DISCRETO)
+  maxRanking             Ranking
+  level                  Int     @default(1)
+  xp                     Int     @default(0)
+  breakthroughAttempts   Int     @default(0)
+  pendingSkillSelections Int     @default(0)
 
   baseHp  Int
   baseAtk Int
