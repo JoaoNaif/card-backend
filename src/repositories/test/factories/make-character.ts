@@ -1,6 +1,10 @@
 import { faker } from '@faker-js/faker'
 import type { UniqueEntityId } from '../../../core/entities/unique-entity-id'
-import { Character, Ranking, type CharacterProps } from '../../../entities/character'
+import {
+  Character,
+  Ranking,
+  type CharacterProps,
+} from '../../../entities/character'
 
 export function makeCharacter(
   override: Partial<CharacterProps> = {},
@@ -15,6 +19,9 @@ export function makeCharacter(
       level: 1,
       xp: 0,
       breakthroughAttempts: 0,
+      pendingSkillSelections: 0,
+      secondaryPowerId: null,
+      awakenedPowerId: null,
       baseHp: 100,
       baseAtk: 10,
       baseDef: 10,

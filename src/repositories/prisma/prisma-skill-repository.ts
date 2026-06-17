@@ -60,4 +60,20 @@ export class PrismaSkillRepository implements ISkillRepository {
 
     return data.map(PrismaSkillMapper.toDomain)
   }
+
+  async findEligibleForCharacter(
+    powerIds: string[],
+    characterLevel: number,
+    excludeSkillIds: string[]
+  ): Promise<Skill[]> {
+    const data = await prisma.skill.findMany({
+      where: {
+        powerId: { in: powerIds },
+        minLevel: { lte: characterLevel },
+        id: { notIn: excludeSkillIds },
+      },
+    })
+
+    return data.map(PrismaSkillMapper.toDomain)
+  }
 }

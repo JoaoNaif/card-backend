@@ -33,4 +33,17 @@ export class InMemorySkillRepository implements ISkillRepository {
 
     return this.items.filter((t) => t.name.includes(search)).slice(start, end)
   }
+
+  async findEligibleForCharacter(
+    powerIds: string[],
+    characterLevel: number,
+    excludeSkillIds: string[]
+  ): Promise<Skill[]> {
+    return this.items.filter(
+      (skill) =>
+        powerIds.includes(skill.powerId) &&
+        skill.minLevel <= characterLevel &&
+        !excludeSkillIds.includes(skill.id.toString())
+    )
+  }
 }
