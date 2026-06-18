@@ -1,0 +1,124 @@
+import { left, right, type Either } from '../../core/either'
+import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
+import type { ICharacterRepository } from '../../repositories/interface/character-repository'
+import type { ICharacterSkillRepository } from '../../repositories/interface/character-skill-repository'
+import type { IPowerRepository } from '../../repositories/interface/power-repository'
+import type { ISkillRepository } from '../../repositories/interface/skill-repository'
+import type { DtoPowerRaw } from '../Power/dtos/dto-power-raw'
+import type { DtoSkillRaw } from '../Skill/dtos/dto-skill-raw'
+import type { DtoCharacterFull } from './dtos/dto-character-full'
+
+interface GetCharacterUseCaseRequest {
+  characterId: string
+}
+
+type GetCharacterUseCaseResponse = Either<
+  ResourceNotFoundError,
+  {
+    character: DtoCharacterFull
+  }
+>
+
+export class GetCharacterUseCase {
+  constructor(
+    private characterRepository: ICharacterRepository,
+    private powerRepository: IPowerRepository,
+    private characterSkillRepository: ICharacterSkillRepository,
+    private skillRepository: ISkillRepository
+  ) {}
+
+  async execute({
+    characterId,
+  }: GetCharacterUseCaseRequest): Promise<GetCharacterUseCaseResponse> {
+    const character = await this.characterRepository.findById(characterId)
+
+    if (!character) return left(new ResourceNotFoundError('Character'))
+
+    const power = await this.powerRepository.findById(character.powerId)
+
+    if (!power) return left(new ResourceNotFoundError('Power'))
+
+    const toPowerRaw = (p: typeof power): DtoPowerRaw => ({
+      id: p.id.toString(),
+      name: p.name,
+      description: p.description,
+      pillar: p.pillar,
+      canAwaken: p.canAwaken,
+      isAwakened: p.isAwakened,
+      createdAt: p.createdAt,
+    })
+
+    let secondaryPowerDto: DtoPowerRaw | null | undefined = null
+    if (character.secondaryPowerId) {
+      const secondaryPower = await this.powerRepository.findById(
+        character.secondaryPowerId
+      )
+      if (!secondaryPower)
+        return left(new ResourceNotFoundError('SecondaryPower'))
+      secondaryPowerDto = toPowerRaw(secondaryPower)
+    }
+
+    let awakenedPowerDto: DtoPowerRaw | null | undefined = null
+    if (character.awakenedPowerId) {
+      const awakenedPower = await this.powerRepository.findById(
+        character.awakenedPowerId
+      )
+      if (!awakenedPower)
+        return left(new ResourceNotFoundError('AwakenedPower'))
+      awakenedPowerDto = toPowerRaw(awakenedPower)
+    }
+
+    const characterSkills =
+      await this.characterSkillRepository.findAllByCharacterId(
+        character.id.toString()
+      )
+
+    const skills = (
+      await Promise.all(
+        characterSkills.map((cs) => this.skillRepository.findById(cs.skillId))
+      )
+    )
+      .filter((s) => s !== null)
+      .map(
+        (s): DtoSkillRaw => ({
+          id: s.id.toString(),
+          name: s.name,
+          description: s.description,
+          limitation: s.limitation,
+          cooldownTurns: s.cooldownTurns,
+          debuffDuration: s.debuffDuration,
+          debuffStat: s.debuffStat,
+          debuffValue: s.debuffValue,
+          minLevel: s.minLevel,
+          powerId: s.powerId,
+          appliesBattleFieldId: s.appliesBattleFieldId ?? null,
+          fieldDuration: s.fieldDuration ?? null,
+          createdAt: s.createdAt,
+        })
+      )
+
+    return right({
+      character: {
+        id: character.id.toString(),
+        name: character.name,
+        description: character.description,
+        level: character.level,
+        ranking: character.ranking,
+        maxRanking: character.maxRanking,
+        breakthroughAttempts: character.breakthroughAttempts,
+        xp: character.xp,
+        baseAtk: character.baseAtk,
+        baseDef: character.baseDef,
+        baseHp: character.baseHp,
+        baseSpd: character.baseSpd,
+        userId: character.userId,
+        power: toPowerRaw(power),
+        secondaryPowerId: secondaryPowerDto,
+        awakenedPowerId: awakenedPowerDto,
+        traits: character.traits,
+        skills,
+        createdAt: character.createdAt,
+      },
+    })
+  }
+}
