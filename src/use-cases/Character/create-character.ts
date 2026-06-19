@@ -80,6 +80,24 @@ export class CreateCharacterUseCase {
       return left(new ResourceNotFoundError('Power'))
     }
 
+    let resolvedSecondaryPowerId: string | null = null
+    if (secondaryPowerId) {
+      const secondPower = await this.powerRepository.findById(secondaryPowerId)
+      if (!secondPower) {
+        return left(new ResourceNotFoundError('Secondary Power'))
+      }
+      resolvedSecondaryPowerId = secondPower.id.toString()
+    }
+
+    let resolvedAwakenedPowerId: string | null = null
+    if (awakenedPowerId) {
+      const awakePower = await this.powerRepository.findById(awakenedPowerId)
+      if (!awakePower) {
+        return left(new ResourceNotFoundError('Awakened Power'))
+      }
+      resolvedAwakenedPowerId = awakePower.id.toString()
+    }
+
     const character = Character.create({
       name,
       description,
@@ -92,8 +110,8 @@ export class CreateCharacterUseCase {
       maxRanking,
       ranking,
       xp,
-      awakenedPowerId,
-      secondaryPowerId,
+      secondaryPowerId: resolvedSecondaryPowerId,
+      awakenedPowerId: resolvedAwakenedPowerId,
       powerId: power.id.toString(),
     })
 

@@ -22,6 +22,8 @@ export class PrismaCharacterMapper {
         baseDef: raw.baseDef,
         baseSpd: raw.baseSpd,
         powerId: raw.powerId,
+        secondaryPowerId: raw.secondaryPowerId,
+        awakenedPowerId: raw.awakenedPowerId,
         pendingSkillSelections: raw.pendingSkillSelections,
         traits: traits ?? [],
         createdAt: raw.createdAt,
@@ -46,6 +48,8 @@ export class PrismaCharacterMapper {
       baseDef: character.baseDef,
       baseSpd: character.baseSpd,
       powerId: character.powerId,
+      secondaryPowerId: character.secondaryPowerId ?? null,
+      awakenedPowerId: character.awakenedPowerId ?? null,
       pendingSkillSelections: character.pendingSkillSelections,
       createdAt: character.createdAt,
     }
@@ -66,6 +70,8 @@ export class PrismaCharacterMapper {
       baseDef: character.baseDef,
       baseSpd: character.baseSpd,
       powerId: character.powerId,
+      secondaryPowerId: character.secondaryPowerId ?? null,
+      awakenedPowerId: character.awakenedPowerId ?? null,
       pendingSkillSelections: character.pendingSkillSelections,
       createdAt: character.createdAt,
     }

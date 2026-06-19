@@ -112,8 +112,8 @@ Definido no modelo `Power` com o campo `canAwaken: Boolean`. Exemplo:
 
 ### Como funciona
 
-1. O personagem atinge o **nível 40**
-2. A cada nível múltiplo de 5 a partir daí (40, 45, 50, 55...) há uma **chance de despertar**
+1. O personagem atinge o **nível 20**
+2. A cada nível múltiplo de 5 a partir daí (20, 25, 30, 35...) há uma **chance de despertar**
 3. A chance % é fixa e calibrada depois (sugestão inicial: 15%)
 4. Se despertar: o sistema escolhe **aleatoriamente** uma das formas possíveis do poder
 

@@ -7,6 +7,9 @@ import type { ICharacterRepository } from '../../repositories/interface/characte
 import type { DtoCharacterSkillRaw } from './dtos/dto-character-skill-raw'
 import type { ICharacterSkillRepository } from '../../repositories/interface/character-skill-repository'
 import { CharacterSkill } from '../../entities/character-skill'
+import { SkillIncompatibleWithPowerError } from './err/skill-incompatible-with-power-error'
+import { SlotSkillFullError } from './err/slot-skill-full-error'
+import { MinLevelError } from './err/min-level-error'
 
 interface CreateCharacterSkillUseCaseRequest {
   userId: string
@@ -16,7 +19,11 @@ interface CreateCharacterSkillUseCaseRequest {
 }
 
 type CreateCharacterSkillUseCaseResponse = Either<
-  ResourceAlreadyExistError | ResourceNotFoundError | UnauthorizedError,
+  | ResourceAlreadyExistError
+  | ResourceNotFoundError
+  | UnauthorizedError
+  | SkillIncompatibleWithPowerError
+  | SlotSkillFullError,
   {
     characterSkill: DtoCharacterSkillRaw
   }
@@ -37,28 +44,37 @@ export class CreateCharacterSkillUseCase {
   }: CreateCharacterSkillUseCaseRequest): Promise<CreateCharacterSkillUseCaseResponse> {
     const skill = await this.skillRepository.findById(skillId)
 
-    if (!skill) {
-      return left(new ResourceNotFoundError('Skill'))
-    }
+    if (!skill) return left(new ResourceNotFoundError('Skill'))
 
     const character = await this.characterRepository.findById(characterId)
 
-    if (!character) {
-      return left(new ResourceNotFoundError('Character'))
-    }
+    if (!character) return left(new ResourceNotFoundError('Character'))
 
-    if (character.userId !== userId) {
-      return left(new UnauthorizedError())
-    }
+    if (character.userId !== userId) return left(new UnauthorizedError())
 
-    const existingCharacterSkill = await this.characterSkillRepository.findByIds(
-      characterId,
-      skillId
-    )
+    const existingCharacterSkill =
+      await this.characterSkillRepository.findByIds(characterId, skillId)
 
     if (existingCharacterSkill) {
       return left(new ResourceAlreadyExistError('CharacterSkill'))
     }
+
+    const allowedPowerIds = [
+      character.powerId,
+      character.secondaryPowerId,
+      character.awakenedPowerId,
+    ].filter(Boolean)
+
+    if (!allowedPowerIds.includes(skill.powerId)) {
+      return left(new SkillIncompatibleWithPowerError())
+    }
+
+    const countSkill =
+      await this.characterSkillRepository.findAllByCharacterId(characterId)
+
+    if (countSkill.length >= 4) return left(new SlotSkillFullError())
+
+    if (character.level < skill.minLevel) return left(new MinLevelError())
 
     const characterskill = CharacterSkill.create({
       assignedAt,

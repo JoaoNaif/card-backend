@@ -7,6 +7,7 @@ import { makeAssignTraitController } from '../controllers/Character/factories/ma
 import { makeGainXpController } from '../controllers/Character/factories/make-gain-xp.controller'
 import { makeSwapCharacterController } from '../controllers/Character/factories/make-swap-character.controller'
 import { authenticate } from '../middlewares/authenticate'
+import { makeFetchCharacterRosterUserController } from '../controllers/Character/factories/make-fetch-character-roster-user.controller'
 
 const characterRoutes = Router()
 const createCharacterController = makeCreateCharacterController()
@@ -16,12 +17,31 @@ const acquireCharacterController = makeAcquireCharacterController()
 const assignTraitController = makeAssignTraitController()
 const gainXpController = makeGainXpController()
 const swapCharacterController = makeSwapCharacterController()
+const fetchCharacterRosterUserController =
+  makeFetchCharacterRosterUserController()
 
 characterRoutes.post('/', authenticate, ...createCharacterController.handle)
-characterRoutes.get('/', (req, res) => fetchCharacterController.handle(req, res))
-characterRoutes.get('/:characterId', (req, res) => getCharacterController.handle(req, res))
-characterRoutes.patch('/acquire', authenticate, ...acquireCharacterController.handle)
-characterRoutes.patch('/assign-trait', authenticate, ...assignTraitController.handle)
+characterRoutes.get('/', (req, res) =>
+  fetchCharacterController.handle(req, res)
+)
+characterRoutes.get(
+  '/roster-user',
+  authenticate,
+  ...fetchCharacterRosterUserController.handle
+)
+characterRoutes.get('/:characterId', (req, res) =>
+  getCharacterController.handle(req, res)
+)
+characterRoutes.patch(
+  '/acquire',
+  authenticate,
+  ...acquireCharacterController.handle
+)
+characterRoutes.patch(
+  '/assign-trait',
+  authenticate,
+  ...assignTraitController.handle
+)
 characterRoutes.patch('/gain-xp', ...gainXpController.handle)
 characterRoutes.patch('/swap', authenticate, ...swapCharacterController.handle)
 

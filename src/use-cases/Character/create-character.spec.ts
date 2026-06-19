@@ -15,6 +15,20 @@ let characterRepository: InMemoryCharacterRepository
 let powerRepository: InMemoryPowerRepository
 let sut: CreateCharacterUseCase
 
+const baseRequest = {
+  name: 'Brave',
+  description: 'A brave character',
+  baseAtk: 12,
+  baseDef: 10,
+  baseHp: 10,
+  baseSpd: 5,
+  breakthroughAttempts: 0,
+  level: 10,
+  maxRanking: Ranking.CAOTICO,
+  ranking: Ranking.DIVERGENTE,
+  xp: 10,
+}
+
 describe('CreateCharacterUseCase', () => {
   beforeEach(() => {
     userRepository = new InMemoryUserRepository()
@@ -27,113 +41,102 @@ describe('CreateCharacterUseCase', () => {
     )
   })
 
-  it('should create a character successfully', async () => {
+  it('should create a character with primary power only', async () => {
     const user = makeUser({ userRole: UserRole.ADMIN })
-
-    await userRepository.create(user)
-
     const power = makePower()
-
+    await userRepository.create(user)
     await powerRepository.create(power)
 
     const result = await sut.execute({
       adminId: user.id.toString(),
-      name: 'Brave',
-      description: 'A brave trait',
-      baseAtk: 12,
-      baseDef: 10,
-      baseHp: 10,
-      baseSpd: 5,
-      breakthroughAttempts: 0,
-      level: 10,
-      maxRanking: Ranking.CAOTICO,
-      ranking: Ranking.DIVERGENTE,
-      xp: 10,
       powerId: power.id.toString(),
+      ...baseRequest,
     })
 
     expect(result.isRight()).toBe(true)
-    expect(userRepository.items).toHaveLength(1)
-
     if (result.isRight()) {
       expect(result.value.character.name).toBe('Brave')
-      expect(result.value.character.description).toBe('A brave trait')
+      expect(result.value.character.secondaryPowerId).toBeNull()
+      expect(result.value.character.awakenedPowerId).toBeNull()
     }
   })
 
-  it('should return an error when power not found', async () => {
+  it('should create a character with dual power', async () => {
     const user = makeUser({ userRole: UserRole.ADMIN })
-
+    const primary = makePower()
+    const secondary = makePower()
     await userRepository.create(user)
+    await powerRepository.create(primary)
+    await powerRepository.create(secondary)
 
     const result = await sut.execute({
       adminId: user.id.toString(),
-      name: 'Brave',
-      description: 'A brave trait',
-      baseAtk: 12,
-      baseDef: 10,
-      baseHp: 10,
-      baseSpd: 5,
-      breakthroughAttempts: 0,
-      level: 10,
-      maxRanking: Ranking.CAOTICO,
-      ranking: Ranking.DIVERGENTE,
-      xp: 10,
-      powerId: 'non power',
+      powerId: primary.id.toString(),
+      secondaryPowerId: secondary.id.toString(),
+      ...baseRequest,
+    })
+
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.character.secondaryPowerId).toBe(secondary.id.toString())
+    }
+  })
+
+  it('should return error when secondary power is not found', async () => {
+    const user = makeUser({ userRole: UserRole.ADMIN })
+    const primary = makePower()
+    await userRepository.create(user)
+    await powerRepository.create(primary)
+
+    const result = await sut.execute({
+      adminId: user.id.toString(),
+      powerId: primary.id.toString(),
+      secondaryPowerId: 'non-existing-power',
+      ...baseRequest,
     })
 
     expect(result.isLeft()).toBe(true)
     expect(result.value).toBeInstanceOf(ResourceNotFoundError)
   })
 
-  it('should return an error when user is not an admin', async () => {
-    const user = makeUser({ userRole: UserRole.USER })
-
+  it('should return error when primary power is not found', async () => {
+    const user = makeUser({ userRole: UserRole.ADMIN })
     await userRepository.create(user)
 
-    const power = makePower()
+    const result = await sut.execute({
+      adminId: user.id.toString(),
+      powerId: 'non-existing-power',
+      ...baseRequest,
+    })
 
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(ResourceNotFoundError)
+  })
+
+  it('should return error when user is not an admin', async () => {
+    const user = makeUser({ userRole: UserRole.USER })
+    const power = makePower()
+    await userRepository.create(user)
     await powerRepository.create(power)
 
     const result = await sut.execute({
       adminId: user.id.toString(),
-      name: 'Brave',
-      description: 'A brave trait',
-      baseAtk: 12,
-      baseDef: 10,
-      baseHp: 10,
-      baseSpd: 5,
-      breakthroughAttempts: 0,
-      level: 10,
-      maxRanking: Ranking.CAOTICO,
-      ranking: Ranking.DIVERGENTE,
-      xp: 10,
-      powerId: 'non power',
+      powerId: power.id.toString(),
+      ...baseRequest,
     })
 
     expect(result.isLeft()).toBe(true)
     expect(result.value).toBeInstanceOf(UnauthorizedError)
   })
 
-  it('should return an error when user is not found', async () => {
+  it('should return error when user is not found', async () => {
     const power = makePower()
-
     await powerRepository.create(power)
 
     const result = await sut.execute({
       adminId: 'non-existing-user-id',
-      name: 'Brave',
-      description: 'A brave trait',
-      baseAtk: 12,
-      baseDef: 10,
-      baseHp: 10,
-      baseSpd: 5,
-      breakthroughAttempts: 0,
-      level: 10,
-      maxRanking: Ranking.CAOTICO,
-      ranking: Ranking.DIVERGENTE,
-      xp: 10,
-      powerId: 'non power',
+      powerId: power.id.toString(),
+      ...baseRequest,
     })
 
     expect(result.isLeft()).toBe(true)
