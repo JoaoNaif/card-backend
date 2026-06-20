@@ -8,6 +8,15 @@ export enum StatType {
   DEF = 'DEF',
   SPD = 'SPD',
 }
+
+export enum TargetType {
+  SINGLE_ENEMY = 'SINGLE_ENEMY',
+  AOE_ENEMIES = 'AOE_ENEMIES',
+  SINGLE_ALLY = 'SINGLE_ALLY',
+  ALL_ALLIES = 'ALL_ALLIES',
+  SELF = 'SELF',
+}
+
 export interface SkillProps {
   name: string
   description: string
@@ -16,6 +25,12 @@ export interface SkillProps {
   debuffStat: StatType
   debuffValue: number
   debuffDuration: number
+  targetType: TargetType
+  damageMultiplier: number
+  healMultiplier: number
+  targetEffectStat?: StatType | null
+  targetEffectValue?: number | null
+  targetEffectDuration?: number | null
   minLevel: number
   powerId: string
   appliesBattleFieldId?: string | null
@@ -68,14 +83,44 @@ export class Skill extends Entity<SkillProps> {
     return this.props.debuffDuration
   }
 
+  get targetType() {
+    return this.props.targetType
+  }
+
+  get damageMultiplier() {
+    return this.props.damageMultiplier
+  }
+
+  get healMultiplier() {
+    return this.props.healMultiplier
+  }
+
+  get targetEffectStat() {
+    return this.props.targetEffectStat
+  }
+
+  get targetEffectValue() {
+    return this.props.targetEffectValue
+  }
+
+  get targetEffectDuration() {
+    return this.props.targetEffectDuration
+  }
+
   get createdAt() {
     return this.props.createdAt
   }
 
-  static create(props: Optional<SkillProps, 'createdAt'>, id?: UniqueEntityId) {
+  static create(
+    props: Optional<SkillProps, 'createdAt' | 'targetType' | 'damageMultiplier' | 'healMultiplier'>,
+    id?: UniqueEntityId
+  ) {
     const skill = new Skill(
       {
         ...props,
+        targetType: props.targetType ?? TargetType.SINGLE_ENEMY,
+        damageMultiplier: props.damageMultiplier ?? 0,
+        healMultiplier: props.healMultiplier ?? 0,
         createdAt: props.createdAt ?? new Date(),
       },
       id

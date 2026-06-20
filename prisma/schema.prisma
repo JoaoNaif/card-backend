@@ -45,6 +45,14 @@ enum BonusType {
   FLAT
 }
 
+enum TargetType {
+  SINGLE_ENEMY
+  AOE_ENEMIES
+  SINGLE_ALLY
+  ALL_ALLIES
+  SELF
+}
+
 model User {
   id           String      @id @default(cuid())
   email        String      @unique
@@ -100,6 +108,12 @@ model Skill {
   debuffStat           StatType
   debuffValue          Float
   debuffDuration       Int
+  targetType           TargetType       @default(SINGLE_ENEMY)
+  damageMultiplier     Float            @default(0.0)
+  healMultiplier       Float            @default(0.0)
+  targetEffectStat     StatType?
+  targetEffectValue    Float?
+  targetEffectDuration Int?
   minLevel             Int
   powerId              String
   appliesBattleFieldId String?

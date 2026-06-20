@@ -2,7 +2,7 @@ import { left, right, type Either } from '../../core/either'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import { ResourceAlreadyExistError } from '../../core/error/err/resource-already-exist-error'
 import { UnauthorizedError } from '../../core/error/err/unauthorized-error'
-import { Skill, StatType } from '../../entities/skill'
+import { Skill, StatType, TargetType } from '../../entities/skill'
 import type { IBattleFieldRepository } from '../../repositories/interface/battle-field-repository'
 import type { IPowerRepository } from '../../repositories/interface/power-repository'
 import type { ISkillRepository } from '../../repositories/interface/skill-repository'
@@ -18,6 +18,12 @@ interface CreateSkillUseCaseRequest {
   debuffStat: StatType
   debuffValue: number
   debuffDuration: number
+  targetType?: TargetType
+  damageMultiplier?: number
+  healMultiplier?: number
+  targetEffectStat?: StatType | null
+  targetEffectValue?: number | null
+  targetEffectDuration?: number | null
   minLevel: number
   powerId: string
   appliesBattleFieldId?: string | null
@@ -48,6 +54,12 @@ export class CreateSkillUseCase {
     debuffDuration,
     debuffStat,
     debuffValue,
+    targetType,
+    damageMultiplier,
+    healMultiplier,
+    targetEffectStat,
+    targetEffectValue,
+    targetEffectDuration,
     minLevel,
     powerId,
     appliesBattleFieldId,
@@ -95,6 +107,12 @@ export class CreateSkillUseCase {
       debuffDuration,
       debuffStat,
       debuffValue,
+      targetType,
+      damageMultiplier,
+      healMultiplier,
+      targetEffectStat: targetEffectStat ?? null,
+      targetEffectValue: targetEffectValue ?? null,
+      targetEffectDuration: targetEffectDuration ?? null,
       powerId: power.id.toString(),
       appliesBattleFieldId: battleField?.id.toString() ?? null,
       fieldDuration: fieldDuration ?? null,
@@ -109,9 +127,15 @@ export class CreateSkillUseCase {
         description: skill.description,
         limitation: skill.limitation,
         cooldownTurns: skill.cooldownTurns,
-        debuffDuration: skill.debuffDuration,
         debuffStat: skill.debuffStat,
         debuffValue: skill.debuffValue,
+        debuffDuration: skill.debuffDuration,
+        targetType: skill.targetType,
+        damageMultiplier: skill.damageMultiplier,
+        healMultiplier: skill.healMultiplier,
+        targetEffectStat: skill.targetEffectStat ?? null,
+        targetEffectValue: skill.targetEffectValue ?? null,
+        targetEffectDuration: skill.targetEffectDuration ?? null,
         minLevel: skill.minLevel,
         powerId: skill.powerId,
         appliesBattleFieldId: skill.appliesBattleFieldId ?? null,

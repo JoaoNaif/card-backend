@@ -2,7 +2,7 @@ import type { CreateSkillUseCase } from '../../use-cases/Skill/create-skill'
 import type { Request, Response } from 'express'
 import { zodValidationPipe } from '../_pipe/zod-validation-pipe'
 import z from 'zod'
-import { StatType } from '../../entities/skill'
+import { StatType, TargetType } from '../../entities/skill'
 
 export const createSkillBodySchema = z.object({
   name: z.string(),
@@ -12,6 +12,12 @@ export const createSkillBodySchema = z.object({
   debuffStat: z.enum(Object.values(StatType) as [StatType, ...StatType[]]),
   debuffValue: z.number(),
   debuffDuration: z.number(),
+  targetType: z.enum(Object.values(TargetType) as [TargetType, ...TargetType[]]).optional(),
+  damageMultiplier: z.number().optional(),
+  healMultiplier: z.number().optional(),
+  targetEffectStat: z.enum(Object.values(StatType) as [StatType, ...StatType[]]).optional().nullable(),
+  targetEffectValue: z.number().optional().nullable(),
+  targetEffectDuration: z.number().optional().nullable(),
   appliesBattleFieldId: z.string().optional(),
   fieldDuration: z.number().optional(),
   minLevel: z.number(),
@@ -37,6 +43,12 @@ export class CreateSkillController {
         debuffStat,
         debuffDuration,
         debuffValue,
+        targetType,
+        damageMultiplier,
+        healMultiplier,
+        targetEffectStat,
+        targetEffectValue,
+        targetEffectDuration,
         appliesBattleFieldId,
         fieldDuration,
       } = req.body
@@ -50,6 +62,12 @@ export class CreateSkillController {
         debuffStat,
         debuffDuration,
         debuffValue,
+        targetType,
+        damageMultiplier,
+        healMultiplier,
+        targetEffectStat,
+        targetEffectValue,
+        targetEffectDuration,
         appliesBattleFieldId,
         fieldDuration,
         minLevel,

@@ -1,4 +1,4 @@
-import type { StatType } from '../../../entities/skill'
+import type { StatType, TargetType } from '../../../entities/skill'
 
 export interface DtoSkillRaw {
   id: string
@@ -6,9 +6,15 @@ export interface DtoSkillRaw {
   description: string
   limitation: string
   cooldownTurns: number
-  debuffDuration: number
   debuffStat: StatType
   debuffValue: number
+  debuffDuration: number
+  targetType: TargetType
+  damageMultiplier: number
+  healMultiplier: number
+  targetEffectStat?: StatType | null
+  targetEffectValue?: number | null
+  targetEffectDuration?: number | null
   minLevel: number
   powerId: string
   appliesBattleFieldId?: string | null
