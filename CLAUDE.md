@@ -118,7 +118,7 @@ Skills não custam energia. Usar uma skill impõe debuff temporário no próprio
 
 ### Sistema de Despertar
 - Definido no `Power`: `canAwaken: Boolean` — não todo poder desperta (ex: Tempo não desperta)
-- Janela: nível 40+, verificado a cada 5 níveis (40, 45, 50...)
+- Janela: nível 20+, verificado a cada 5 níveis (20, 25, 30...)
 - Chance aleatória por verificação (valor a calibrar, sugestão: 15%)
 - Forma despertada sorteada entre as possíveis (`PowerAwakening` table)
 - Exemplo: Fogo → Magma ou Plasma (sorteado)
