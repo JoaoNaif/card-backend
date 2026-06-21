@@ -141,7 +141,41 @@ Character
 
 ---
 
-## 6. Campos de Batalha (Resumo — já implementado)
+## 6. Modos de Batalha
+
+O sistema de batalha é implementado em três fases progressivas, cada uma construída sobre a anterior.
+
+### Fase A — Auto Battle (Implementar primeiro)
+
+Ambos os times são controlados por IA. O jogador monta os times e submete — a engine resolve a batalha inteiramente e devolve o log completo.
+
+- **Endpoint:** `POST /battles/auto`
+- **Request:** `{ team1: string[], team2: string[], battleFieldId?: string, maxTurns?: number }`
+- **Response:** `{ winner: 1 | 2 | "draw", totalTurns: number, log: TurnLog[] }`
+- **Seleção de skill:** aleatória entre as disponíveis (não em cooldown)
+- **Infraestrutura:** REST puro, sem estado persistente entre requests
+
+### Fase B — Player vs IA / PvE (Implementar segundo)
+
+O jogador controla um time em tempo real, escolhendo a skill de cada personagem turno a turno. O time adversário é controlado pela IA.
+
+- **Endpoint criação:** `POST /battles/pve` → cria sessão, retorna `battleId` + estado inicial
+- **Endpoint de turno:** `POST /battles/:id/turn` → jogador envia `{ characterId, skillId }`, servidor processa turno completo (ação do jogador + resposta da IA) e devolve resultado
+- **Estado:** sessão de batalha mantida em memória (`Map<battleId, BattleState>`)
+- **Infraestrutura:** REST + estado em memória — sem WebSocket
+
+### Fase C — Player vs Player / PvP (Implementar por último)
+
+Dois jogadores reais escolhem skills em tempo real em turnos simultâneos ou alternados.
+
+- **Infraestrutura:** WebSocket (Socket.io) rodando junto com o Express
+- **Eventos:** `battle:join`, `battle:skill`, `battle:turn-result`, `battle:end`
+- **Estado:** sessão compartilhada entre os dois clientes conectados
+- **Depende de:** Fase B estar estável (mesma lógica de turno, só muda quem decide a skill)
+
+---
+
+## 7. Campos de Batalha (Resumo — já implementado)
 
 - Toda batalha começa com um **BattleField aleatório** que dura até o fim
 - Skills podem ativar um novo campo mid-battle via `appliesBattleFieldId` + `fieldDuration` (turnos)
@@ -296,15 +330,28 @@ Stats efetivos calculados na engine: `base + Math.floor(base * GROWTH_RATE * (le
 25. Atualizar `create-power` controller (pillar no body)
 26. Adicionar rota e factory para `awaken-character` se necessário expor endpoint
 
-### Fase 6 — Engine de Batalha
+### Fase 6A — Engine de Batalha (Auto Battle)
 
 27. **`BattleEngine`** — serviço puro TypeScript em `src/use-cases/Battle/`
     - Calcula stats efetivos com `GROWTH_RATE` uniforme
     - Aplica modificadores do BattleField (por trait)
     - Aplica multiplicador 1.25× de dual power no debuff
     - Ordena ação por SPD efetivo
-    - Seleciona skill com base na lógica de prioridade
-    - Aplica debuffs e remove ao expirar
+    - Seleciona skill aleatoriamente entre as disponíveis
+    - Aplica debuffs/buffs e remove ao expirar
     - Retorna log turno a turno
-28. **`POST /battles`** — controller que recebe team1[], team2[], battleFieldId, executa engine e retorna log
+28. **`POST /battles/auto`** — controller que recebe team1[], team2[], battleFieldId?, maxTurns?, executa engine e retorna log completo
 29. **`GET /characters/roster/:userId`** — lista os personagens do roster de um usuário para montar times
+
+### Fase 6B — PvE (Player vs IA)
+
+30. **`BattleSession`** — estrutura de sessão em memória (`Map<battleId, BattleSession>`)
+31. **`POST /battles/pve`** — cria sessão PvE, retorna battleId + estado inicial do turno
+32. **`POST /battles/:id/turn`** — recebe `{ characterId, skillId }` do jogador, processa turno completo (jogador + IA), retorna resultado
+33. **`GET /battles/:id`** — retorna estado atual da batalha (para o jogador reconectar se necessário)
+
+### Fase 6C — PvP (Player vs Player) — Futuro
+
+34. Adicionar Socket.io ao servidor Express
+35. Eventos: `battle:join`, `battle:skill`, `battle:turn-result`, `battle:end`
+36. Reutiliza a lógica de turno da Fase 6B — só muda quem decide a skill (dois humanos em vez de um humano + IA)

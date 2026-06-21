@@ -124,9 +124,23 @@ Skills não custam energia. Usar uma skill impõe debuff temporário no próprio
 - Exemplo: Fogo → Magma ou Plasma (sorteado)
 - Despertar é permanente, desbloqueia skills exclusivas, pilar não muda
 
+### Modos de Batalha
+
+O sistema de batalha tem três modos em ordem de implementação:
+
+| Modo | Descrição | Infraestrutura | Status |
+|---|---|---|---|
+| **Auto Battle** | Dois times submetidos, IA controla ambos, retorna log completo | REST puro | ⬜ Próximo |
+| **PvE** | Jogador escolhe skills turno a turno contra IA | REST + sessão em memória | ⬜ Após Auto |
+| **PvP** | Dois jogadores em tempo real | WebSocket (Socket.io) | ⬜ Futuro |
+
+- Auto Battle: `POST /battles/auto` — recebe team1[], team2[], battleFieldId?, maxTurns?
+- PvE: `POST /battles/pve` (cria sessão) + `POST /battles/:id/turn` (envia skill por turno)
+- PvP: depende de WebSocket, reutiliza lógica de turno do PvE
+
 ### Regras de Negócio Planejadas
 - Roster limitado a **8 personagens** por usuário ✅
-- Engine de combate 4v4 em memória com log de turnos
+- Engine de combate 4v4 com log de turnos
 - Campos de batalha com buffs/debuffs baseados em traits dos personagens
 
 ### Regras de Campo de Batalha (Confirmadas)
@@ -179,5 +193,8 @@ Credenciais: `postgres/docker`, banco: `origin`
 1. ✅ Clean Architecture + Vitest + Docker
 2. ✅ Regras de personagens (roster, XP/level up, Either em todos os use cases)
 3. ✅ Campos de batalha (traits em personagens, modificadores de cenário)
-4. ⬜ Schema v2 (ranking renomeado, pilares, debuff, dual power, despertar) → depois engine de combate 4v4 + endpoints `/battles`
+4. ✅ Schema v2 (ranking renomeado, pilares, debuff, dual power, despertar)
+   ⬜ Fase 6A — Auto Battle engine + `POST /battles/auto`
+   ⬜ Fase 6B — PvE engine + sessão em memória + `POST /battles/pve` + `POST /battles/:id/turn`
+   ⬜ Fase 6C — PvP com WebSocket (Socket.io)
 5. ⬜ Autenticação JWT (rota `/auth/login`, middleware de proteção de rotas)
