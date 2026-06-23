@@ -53,6 +53,18 @@ enum TargetType {
   SELF
 }
 
+enum BattleMode {
+  AUTO
+  PVE
+  PVP
+}
+
+enum BattleStatus {
+  ACTIVE
+  COMPLETED
+  ABANDONED
+}
+
 model User {
   id           String      @id @default(cuid())
   email        String      @unique
@@ -60,6 +72,7 @@ model User {
   passwordHash String
   userRole     UserRole    @default(USER)
   characters   Character[]
+  battleTeams  BattleTeam[]
   createdAt    DateTime    @default(now())
 }
 
@@ -131,7 +144,44 @@ model BattleField {
   description String
   modifiers   BattleFieldModifier[]
   skills      Skill[]
+  battles     Battle[]
   createdAt   DateTime              @default(now())
+}
+
+model Battle {
+  id            String       @id @default(cuid())
+  mode          BattleMode
+  status        BattleStatus @default(COMPLETED)
+  battleFieldId String
+  winnerTeam    Int?
+  totalTurns    Int          @default(0)
+  maxTurns      Int?
+  log           Json         @default("[]")
+  sessionState  Json?
+  teams         BattleTeam[]
+  battleField   BattleField  @relation(fields: [battleFieldId], references: [id])
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+}
+
+model BattleTeam {
+  id           String              @id @default(cuid())
+  battleId     String
+  teamNumber   Int
+  userId       String?
+  battle       Battle              @relation(fields: [battleId], references: [id], onDelete: Cascade)
+  user         User?               @relation(fields: [userId], references: [id])
+  participants BattleParticipant[]
+}
+
+model BattleParticipant {
+  id           String     @id @default(cuid())
+  battleTeamId String
+  characterId  String
+  positionRow  Int
+  positionCol  Int
+  battleTeam   BattleTeam @relation(fields: [battleTeamId], references: [id], onDelete: Cascade)
+  character    Character  @relation(fields: [characterId], references: [id])
 }
 
 model BattleFieldModifier {
@@ -166,9 +216,10 @@ model Character {
   secondaryPowerId String?
   awakenedPowerId  String?
   powerId          String
-  user             User?            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user             User?              @relation(fields: [userId], references: [id], onDelete: Cascade)
   traits           Trait[]
   skills           CharacterSkill[]
+  battleParticipations BattleParticipant[]
 
   createdAt      DateTime @default(now())
   power          Power    @relation("PrimaryPower", fields: [powerId], references: [id])
