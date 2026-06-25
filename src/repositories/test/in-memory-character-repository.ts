@@ -39,6 +39,10 @@ export class InMemoryCharacterRepository implements ICharacterRepository {
     return this.items.filter((t) => t.userId === userId).length
   }
 
+  async findManyByIds(ids: string[]): Promise<Character[]> {
+    return this.items.filter((c) => ids.includes(c.id.toString()))
+  }
+
   async findManyByUserId(userId: string): Promise<Character[]> {
     return this.items.filter((c) => c.userId === userId)
   }

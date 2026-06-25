@@ -34,6 +34,17 @@ export class InMemorySkillRepository implements ISkillRepository {
     return this.items.filter((t) => t.name.includes(search)).slice(start, end)
   }
 
+  public characterSkillsMap: Map<string, string[]> = new Map()
+
+  async findManyByCharacterIds(ids: string[]): Promise<Record<string, Skill[]>> {
+    const result: Record<string, Skill[]> = {}
+    for (const id of ids) {
+      const skillIds = this.characterSkillsMap.get(id) ?? []
+      result[id] = this.items.filter((s) => skillIds.includes(s.id.toString()))
+    }
+    return result
+  }
+
   async findEligibleForCharacter(
     powerIds: string[],
     characterLevel: number,

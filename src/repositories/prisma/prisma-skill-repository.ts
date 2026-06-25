@@ -61,6 +61,22 @@ export class PrismaSkillRepository implements ISkillRepository {
     return data.map(PrismaSkillMapper.toDomain)
   }
 
+  async findManyByCharacterIds(ids: string[]): Promise<Record<string, Skill[]>> {
+    const data = await prisma.characterSkill.findMany({
+      where: { characterId: { in: ids } },
+      include: { skill: true },
+    })
+
+    const result: Record<string, Skill[]> = {}
+    for (const id of ids) {
+      result[id] = []
+    }
+    for (const item of data) {
+      result[item.characterId]!.push(PrismaSkillMapper.toDomain(item.skill))
+    }
+    return result
+  }
+
   async findEligibleForCharacter(
     powerIds: string[],
     characterLevel: number,

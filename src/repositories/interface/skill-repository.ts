@@ -7,6 +7,7 @@ export interface ISkillRepository {
   findById(id: string): Promise<Skill | null>
   findByName(name: string): Promise<Skill | null>
   findAll(search: string, page: number, limit: number): Promise<Skill[]>
+  findManyByCharacterIds(ids: string[]): Promise<Record<string, Skill[]>>
   findEligibleForCharacter(
     powerIds: string[],
     characterLevel: number,

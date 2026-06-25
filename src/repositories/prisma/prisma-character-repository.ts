@@ -52,6 +52,14 @@ export class PrismaCharacterRepository implements ICharacterRepository {
     return length
   }
 
+  async findManyByIds(ids: string[]): Promise<Character[]> {
+    const data = await prisma.character.findMany({
+      where: { id: { in: ids } },
+      include: { traits: { select: { id: true, name: true } } },
+    })
+    return data.map((item) => PrismaCharacterMapper.toDomain(item, item.traits))
+  }
+
   async findManyByUserId(userId: string): Promise<Character[]> {
     const characters = await prisma.character.findMany({
       where: { userId },
