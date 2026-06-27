@@ -19,8 +19,16 @@ export class User extends Entity<UserProps> {
     return this.props.email
   }
 
+  set email(email: string) {
+    this.props.email = email
+  }
+
   get name() {
     return this.props.name
+  }
+
+  set name(name: string) {
+    this.props.name = name
   }
 
   get passwordHash() {
