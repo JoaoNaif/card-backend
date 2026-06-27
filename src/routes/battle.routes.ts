@@ -1,9 +1,9 @@
 import { Router } from 'express'
-import { makeCreateBattleController } from '../controllers/Battle/factories/make-create-battle.controller'
+import { makeRunAutoBattleController } from '../controllers/Battle/factories/make-run-auto-battle.controller'
 
 const battleRoutes = Router()
-const createBattleController = makeCreateBattleController()
+const runAutoBattleController = makeRunAutoBattleController()
 
-battleRoutes.post('/', ...createBattleController.handle)
+battleRoutes.post('/auto', ...runAutoBattleController.handle)
 
 export { battleRoutes }

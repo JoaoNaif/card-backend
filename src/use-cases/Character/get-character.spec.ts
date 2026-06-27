@@ -94,7 +94,7 @@ describe('GetCharacterUseCase', () => {
 
     expect(result.isRight()).toBe(true)
     if (result.isRight()) {
-      expect(result.value.character.secondaryPowerId?.id).toBe(secondaryPower.id.toString())
+      expect(result.value.character.secondaryPower?.id).toBe(secondaryPower.id.toString())
     }
   })
 
@@ -115,7 +115,7 @@ describe('GetCharacterUseCase', () => {
 
     expect(result.isRight()).toBe(true)
     if (result.isRight()) {
-      expect(result.value.character.awakenedPowerId?.id).toBe(awakenedPower.id.toString())
+      expect(result.value.character.awakenedPower?.id).toBe(awakenedPower.id.toString())
     }
   })
 

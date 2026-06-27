@@ -93,6 +93,12 @@ export class GetCharacterUseCase {
           powerId: s.powerId,
           appliesBattleFieldId: s.appliesBattleFieldId ?? null,
           fieldDuration: s.fieldDuration ?? null,
+          damageMultiplier: s.damageMultiplier,
+          healMultiplier: s.healMultiplier,
+          targetType: s.targetType,
+          targetEffectDuration: s.targetEffectDuration ?? null,
+          targetEffectStat: s.targetEffectStat ?? null,
+          targetEffectValue: s.targetEffectValue ?? null,
           createdAt: s.createdAt,
         })
       )
@@ -113,8 +119,8 @@ export class GetCharacterUseCase {
         baseSpd: character.baseSpd,
         userId: character.userId,
         power: toPowerRaw(power),
-        secondaryPowerId: secondaryPowerDto,
-        awakenedPowerId: awakenedPowerDto,
+        secondaryPower: secondaryPowerDto,
+        awakenedPower: awakenedPowerDto,
         traits: character.traits,
         skills,
         createdAt: character.createdAt,

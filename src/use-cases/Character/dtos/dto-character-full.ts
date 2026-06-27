@@ -17,8 +17,8 @@ export interface DtoCharacterFull {
   baseDef: number
   baseSpd: number
   power: DtoPowerRaw
-  secondaryPowerId?: DtoPowerRaw | null | undefined
-  awakenedPowerId?: DtoPowerRaw | null | undefined
+  secondaryPower?: DtoPowerRaw | null | undefined
+  awakenedPower?: DtoPowerRaw | null | undefined
   traits: { id: string; name: string }[]
   skills: DtoSkillRaw[]
   createdAt: Date
