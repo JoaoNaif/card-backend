@@ -1,5 +1,4 @@
 import { left, right, type Either } from '../../core/either'
-import { ResourceAlreadyExistError } from '../../core/error/err/resource-already-exist-error'
 import type { IUserRepository } from '../../repositories/interface/user-repository'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 
