@@ -23,7 +23,7 @@ export class EditUserUseCase {
   }: EditUserUseCaseRequest): Promise<EditUserUseCaseResponse> {
     const user = await this.userRepository.findById(userId)
 
-    if (!user) return left(new ResourceNotFoundError('Email'))
+    if (!user) return left(new ResourceNotFoundError('User'))
 
     if (email) {
       const newEmail = await this.userRepository.findByEmail(email)
