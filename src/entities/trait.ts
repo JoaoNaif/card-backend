@@ -13,8 +13,16 @@ export class Trait extends Entity<TraitProps> {
     return this.props.name
   }
 
+  set name(name: string) {
+    this.props.name = name
+  }
+
   get description() {
     return this.props.description
+  }
+
+  set description(description: string) {
+    this.props.description = description
   }
 
   get createdAt() {
