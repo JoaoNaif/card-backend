@@ -22,9 +22,10 @@ export class PrismaSkillRepository implements ISkillRepository {
 
   async delete(skill: Skill): Promise<void> {
     const id = skill.id.toString()
-    await prisma.skill.delete({
-      where: { id },
-    })
+    await prisma.$transaction([
+      prisma.characterSkill.deleteMany({ where: { skillId: id } }),
+      prisma.skill.delete({ where: { id } }),
+    ])
   }
 
   async findById(id: string): Promise<Skill | null> {
