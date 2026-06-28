@@ -43,68 +43,136 @@ export class Skill extends Entity<SkillProps> {
     return this.props.name
   }
 
+  set name(name: string) {
+    this.props.name = name
+  }
+
   get description() {
     return this.props.description
+  }
+
+  set description(description: string) {
+    this.props.description = description
   }
 
   get limitation() {
     return this.props.limitation
   }
 
+  set limitation(limitation: string) {
+    this.props.limitation = limitation
+  }
+
   get minLevel() {
     return this.props.minLevel
+  }
+
+  set minLevel(minLevel: number) {
+    this.props.minLevel = minLevel
   }
 
   get powerId() {
     return this.props.powerId
   }
 
-  get appliesBattleFieldId() {
-    return this.props.appliesBattleFieldId
+  set powerId(powerId: string) {
+    this.props.powerId = powerId
   }
 
-  get fieldDuration() {
-    return this.props.fieldDuration
+  get appliesBattleFieldId(): string | null {
+    return this.props.appliesBattleFieldId ?? null
+  }
+
+  set appliesBattleFieldId(appliesBattleFieldId: string | null) {
+    this.props.appliesBattleFieldId = appliesBattleFieldId
+  }
+
+  get fieldDuration(): number | null {
+    return this.props.fieldDuration ?? null
+  }
+
+  set fieldDuration(fieldDuration: number | null) {
+    this.props.fieldDuration = fieldDuration
   }
 
   get cooldownTurns() {
     return this.props.cooldownTurns
   }
 
+  set cooldownTurns(cooldownTurns: number) {
+    this.props.cooldownTurns = cooldownTurns
+  }
+
   get debuffStat() {
     return this.props.debuffStat
+  }
+
+  set debuffStat(debuffStat: StatType) {
+    this.props.debuffStat = debuffStat
   }
 
   get debuffValue() {
     return this.props.debuffValue
   }
 
+  set debuffValue(debuffValue: number) {
+    this.props.debuffValue = debuffValue
+  }
+
   get debuffDuration() {
     return this.props.debuffDuration
+  }
+
+  set debuffDuration(debuffDuration: number) {
+    this.props.debuffDuration = debuffDuration
   }
 
   get targetType() {
     return this.props.targetType
   }
 
+  set targetType(targetType: TargetType) {
+    this.props.targetType = targetType
+  }
+
   get damageMultiplier() {
     return this.props.damageMultiplier
+  }
+
+  set damageMultiplier(damageMultiplier: number) {
+    this.props.damageMultiplier = damageMultiplier
   }
 
   get healMultiplier() {
     return this.props.healMultiplier
   }
 
-  get targetEffectStat() {
-    return this.props.targetEffectStat
+  set healMultiplier(healMultiplier: number) {
+    this.props.healMultiplier = healMultiplier
   }
 
-  get targetEffectValue() {
-    return this.props.targetEffectValue
+  get targetEffectStat(): StatType | null {
+    return this.props.targetEffectStat ?? null
   }
 
-  get targetEffectDuration() {
-    return this.props.targetEffectDuration
+  set targetEffectStat(targetEffectStat: StatType | null) {
+    this.props.targetEffectStat = targetEffectStat
+  }
+
+  get targetEffectValue(): number | null {
+    return this.props.targetEffectValue ?? null
+  }
+
+  set targetEffectValue(targetEffectValue: number | null) {
+    this.props.targetEffectValue = targetEffectValue
+  }
+
+  get targetEffectDuration(): number | null {
+    return this.props.targetEffectDuration ?? null
+  }
+
+  set targetEffectDuration(targetEffectDuration: number | null) {
+    this.props.targetEffectDuration = targetEffectDuration
   }
 
   get createdAt() {
@@ -112,7 +180,10 @@ export class Skill extends Entity<SkillProps> {
   }
 
   static create(
-    props: Optional<SkillProps, 'createdAt' | 'targetType' | 'damageMultiplier' | 'healMultiplier'>,
+    props: Optional<
+      SkillProps,
+      'createdAt' | 'targetType' | 'damageMultiplier' | 'healMultiplier'
+    >,
     id?: UniqueEntityId
   ) {
     const skill = new Skill(

@@ -3,7 +3,7 @@ import request from 'supertest'
 import app from '../../app'
 import { prisma } from '../../config/prisma'
 
-describe('PUT /traits/update (EditTraitController)', () => {
+describe('DELETE /traits/remove (RemoveTraitController)', () => {
   afterEach(async () => {
     await prisma.trait.deleteMany()
     await prisma.user.deleteMany()
@@ -46,7 +46,7 @@ describe('PUT /traits/update (EditTraitController)', () => {
     return authResponse.headers['set-cookie'] as unknown as string[]
   }
 
-  it('should edit a trait and return 204 when admin is authenticated', async () => {
+  it('should remove a trait and return 204 when admin is authenticated', async () => {
     const cookie = await createAdminAndGetCookie()
 
     const trait = await prisma.trait.create({
@@ -54,39 +54,23 @@ describe('PUT /traits/update (EditTraitController)', () => {
     })
 
     const response = await request(app)
-      .put('/traits/update')
+      .delete('/traits/remove')
       .set('Cookie', cookie)
-      .send({ traitId: trait.id, name: 'Courageous', description: 'Updated description' })
+      .send({ traitId: trait.id })
 
     expect(response.status).toBe(204)
 
-    const updated = await prisma.trait.findUnique({ where: { id: trait.id } })
-    expect(updated?.name).toBe('Courageous')
-    expect(updated?.description).toBe('Updated description')
-  })
-
-  it('should return 400 when trait name is already in use', async () => {
-    const cookie = await createAdminAndGetCookie()
-
-    await prisma.trait.create({ data: { name: 'Courageous', description: 'Already exists' } })
-    const trait = await prisma.trait.create({ data: { name: 'Brave', description: 'A brave trait' } })
-
-    const response = await request(app)
-      .put('/traits/update')
-      .set('Cookie', cookie)
-      .send({ traitId: trait.id, name: 'Courageous' })
-
-    expect(response.status).toBe(400)
-    expect(response.body.message).toBeDefined()
+    const deleted = await prisma.trait.findUnique({ where: { id: trait.id } })
+    expect(deleted).toBeNull()
   })
 
   it('should return 400 when trait does not exist', async () => {
     const cookie = await createAdminAndGetCookie()
 
     const response = await request(app)
-      .put('/traits/update')
+      .delete('/traits/remove')
       .set('Cookie', cookie)
-      .send({ traitId: 'non-existing-trait-id', name: 'Brave' })
+      .send({ traitId: 'non-existing-trait-id' })
 
     expect(response.status).toBe(400)
     expect(response.body.message).toBeDefined()
@@ -100,9 +84,9 @@ describe('PUT /traits/update (EditTraitController)', () => {
     })
 
     const response = await request(app)
-      .put('/traits/update')
+      .delete('/traits/remove')
       .set('Cookie', cookie)
-      .send({ traitId: trait.id, name: 'Courageous' })
+      .send({ traitId: trait.id })
 
     expect(response.status).toBe(400)
     expect(response.body.message).toBeDefined()
@@ -114,8 +98,8 @@ describe('PUT /traits/update (EditTraitController)', () => {
     })
 
     const response = await request(app)
-      .put('/traits/update')
-      .send({ traitId: trait.id, name: 'Courageous' })
+      .delete('/traits/remove')
+      .send({ traitId: trait.id })
 
     expect(response.status).toBe(401)
     expect(response.body.message).toBeDefined()
@@ -125,7 +109,7 @@ describe('PUT /traits/update (EditTraitController)', () => {
     const cookie = await createAdminAndGetCookie()
 
     const response = await request(app)
-      .put('/traits/update')
+      .delete('/traits/remove')
       .set('Cookie', cookie)
       .send({})
 
