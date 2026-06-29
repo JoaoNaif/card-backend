@@ -8,6 +8,7 @@ import { makeGainXpController } from '../controllers/Character/factories/make-ga
 import { makeSwapCharacterController } from '../controllers/Character/factories/make-swap-character.controller'
 import { authenticate } from '../middlewares/authenticate'
 import { makeFetchCharacterRosterUserController } from '../controllers/Character/factories/make-fetch-character-roster-user.controller'
+import { makeEditCharacterController } from '../controllers/Character/factories/make-edit-character.controller'
 
 const characterRoutes = Router()
 const createCharacterController = makeCreateCharacterController()
@@ -15,6 +16,7 @@ const fetchCharacterController = makeFetchCharacterController()
 const getCharacterController = makeGetCharacterController()
 const acquireCharacterController = makeAcquireCharacterController()
 const assignTraitController = makeAssignTraitController()
+const editCharacterController = makeEditCharacterController()
 const gainXpController = makeGainXpController()
 const swapCharacterController = makeSwapCharacterController()
 const fetchCharacterRosterUserController =
@@ -44,5 +46,6 @@ characterRoutes.patch(
 )
 characterRoutes.patch('/gain-xp', ...gainXpController.handle)
 characterRoutes.patch('/swap', authenticate, ...swapCharacterController.handle)
+characterRoutes.put('/update', authenticate, ...editCharacterController.handle)
 
 export { characterRoutes }

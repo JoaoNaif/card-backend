@@ -190,6 +190,10 @@ export class Character extends Entity<CharacterProps> {
     return this.props.powerId
   }
 
+  set powerId(powerId: string) {
+    this.props.powerId = powerId
+  }
+
   get createdAt() {
     return this.props.createdAt
   }
