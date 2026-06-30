@@ -9,6 +9,7 @@ import { makeSwapCharacterController } from '../controllers/Character/factories/
 import { authenticate } from '../middlewares/authenticate'
 import { makeFetchCharacterRosterUserController } from '../controllers/Character/factories/make-fetch-character-roster-user.controller'
 import { makeEditCharacterController } from '../controllers/Character/factories/make-edit-character.controller'
+import { makeRemoveCharacterController } from '../controllers/Character/factories/make-remove-character.controller'
 
 const characterRoutes = Router()
 const createCharacterController = makeCreateCharacterController()
@@ -19,6 +20,7 @@ const assignTraitController = makeAssignTraitController()
 const editCharacterController = makeEditCharacterController()
 const gainXpController = makeGainXpController()
 const swapCharacterController = makeSwapCharacterController()
+const removeCharacterController = makeRemoveCharacterController()
 const fetchCharacterRosterUserController =
   makeFetchCharacterRosterUserController()
 
@@ -47,5 +49,10 @@ characterRoutes.patch(
 characterRoutes.patch('/gain-xp', ...gainXpController.handle)
 characterRoutes.patch('/swap', authenticate, ...swapCharacterController.handle)
 characterRoutes.put('/update', authenticate, ...editCharacterController.handle)
+characterRoutes.delete(
+  '/remove',
+  authenticate,
+  ...removeCharacterController.handle
+)
 
 export { characterRoutes }

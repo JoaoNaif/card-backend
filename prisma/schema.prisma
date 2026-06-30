@@ -181,7 +181,7 @@ model BattleParticipant {
   positionRow  Int
   positionCol  Int
   battleTeam   BattleTeam @relation(fields: [battleTeamId], references: [id], onDelete: Cascade)
-  character    Character  @relation(fields: [characterId], references: [id])
+  character    Character  @relation(fields: [characterId], references: [id], onDelete: Cascade)
 }
 
 model BattleFieldModifier {
