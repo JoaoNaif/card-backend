@@ -67,4 +67,19 @@ export class PrismaBattleFieldRepository implements IBattleFieldRepository {
     })
     return data.map(PrismaBattleFieldMapper.toDomain)
   }
+
+  async delete(battleField: BattleField): Promise<void> {
+    const id = battleField.id.toString()
+    await prisma.battleField.delete({
+      where: { id },
+    })
+  }
+
+  async save(battleField: BattleField): Promise<void> {
+    const id = battleField.id.toString()
+    await prisma.battleField.update({
+      where: { id },
+      data: PrismaBattleFieldMapper.toPrismaUpdate(battleField),
+    })
+  }
 }

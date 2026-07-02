@@ -28,4 +28,15 @@ export class InMemoryBattleFieldRepository implements IBattleFieldRepository {
       .filter((b) => b.name.toLowerCase().includes(search.toLowerCase()))
       .slice(start, start + limit)
   }
+
+  async save(battleField: BattleField): Promise<void> {
+    const index = this.items.findIndex((b) => b.id.equals(battleField.id))
+    if (index >= 0) {
+      this.items[index] = battleField
+    }
+  }
+
+  async delete(battleField: BattleField): Promise<void> {
+    this.items = this.items.filter((b) => !b.id.equals(battleField.id))
+  }
 }

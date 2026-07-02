@@ -5,5 +5,11 @@ export interface IBattleFieldRepository {
   findById(id: string): Promise<BattleField | null>
   findByName(name: string): Promise<BattleField | null>
   findRandom(): Promise<BattleField | null>
-  findAll(search?: string, page?: number, limit?: number): Promise<BattleField[]>
+  findAll(
+    search?: string,
+    page?: number,
+    limit?: number
+  ): Promise<BattleField[]>
+  save(battleField: BattleField): Promise<void>
+  delete(battleField: BattleField): Promise<void>
 }

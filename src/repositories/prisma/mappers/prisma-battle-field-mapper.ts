@@ -1,3 +1,4 @@
+import { create } from 'node:domain'
 import { UniqueEntityId } from '../../../core/entities/unique-entity-id'
 import { BattleField } from '../../../entities/battle-field'
 import type {
@@ -28,5 +29,22 @@ export class PrismaBattleFieldMapper {
       },
       new UniqueEntityId(raw.id)
     )
+  }
+
+  static toPrisma(battleField: BattleField) {
+    return {
+      id: battleField.id.toString(),
+      name: battleField.name,
+      description: battleField.description,
+      createdAt: battleField.createdAt,
+    }
+  }
+
+  static toPrismaUpdate(battleField: BattleField) {
+    return {
+      name: battleField.name,
+      description: battleField.description,
+      createdAt: battleField.createdAt,
+    }
   }
 }
