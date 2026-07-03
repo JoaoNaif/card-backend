@@ -278,4 +278,113 @@ describe('RunAutoBattleUseCase', () => {
       expect(action.selfDebuff.value).toBe(-13)
     }
   })
+
+  it('applies battle field modifiers to combatants with a matching trait', async () => {
+    const battleField = makeBattleField({
+      modifiers: [
+        {
+          id: 'mod-1',
+          traitId: 'trait-fire',
+          traitName: 'Fire',
+          stat: 'ATK',
+          bonusType: 'PERCENT',
+          bonusValue: 100,
+        },
+      ],
+    })
+    await battleFieldRepository.create(battleField)
+
+    const attacker = makeCharacter({
+      baseHp: 100,
+      baseAtk: 10,
+      baseDef: 10,
+      baseSpd: 10,
+      traits: [{ id: 'trait-fire', name: 'Fire' }],
+    })
+    const target = makeCharacter({ baseHp: 1000, baseAtk: 1, baseDef: 0, baseSpd: 1 })
+    await characterRepository.create(attacker)
+    await characterRepository.create(target)
+
+    const skill = makeSkill({
+      damageMultiplier: 1,
+      healMultiplier: 0,
+      targetType: TargetType.SINGLE_ENEMY,
+      debuffStat: StatType.ATK,
+      debuffValue: 0,
+      debuffDuration: 1,
+      cooldownTurns: 0,
+    })
+    await skillRepository.create(skill)
+    linkSkill(attacker.id.toString(), skill.id.toString())
+
+    const result = await sut.execute({
+      team1: { members: [{ characterId: attacker.id.toString(), positionRow: 0, positionCol: 0 }] },
+      team2: { members: [{ characterId: target.id.toString(), positionRow: 0, positionCol: 0 }] },
+      battleFieldId: battleField.id.toString(),
+      maxTurns: 1,
+    })
+
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      const firstTurn = JSON.parse(result.value.log[0]!)
+      const action = firstTurn.actions[0]
+      // base ATK 10 boosted +100% by the field's "Fire" modifier -> effective ATK 20
+      // targetDef 0 -> calcDamage(20, 0) = 20
+      expect(action.damage).toBe(20)
+    }
+  })
+
+  it('does not apply battle field modifiers when the character lacks the trait', async () => {
+    const battleField = makeBattleField({
+      modifiers: [
+        {
+          id: 'mod-1',
+          traitId: 'trait-fire',
+          traitName: 'Fire',
+          stat: 'ATK',
+          bonusType: 'PERCENT',
+          bonusValue: 100,
+        },
+      ],
+    })
+    await battleFieldRepository.create(battleField)
+
+    const attacker = makeCharacter({
+      baseHp: 100,
+      baseAtk: 10,
+      baseDef: 10,
+      baseSpd: 10,
+      traits: [{ id: 'trait-ice', name: 'Ice' }],
+    })
+    const target = makeCharacter({ baseHp: 1000, baseAtk: 1, baseDef: 0, baseSpd: 1 })
+    await characterRepository.create(attacker)
+    await characterRepository.create(target)
+
+    const skill = makeSkill({
+      damageMultiplier: 1,
+      healMultiplier: 0,
+      targetType: TargetType.SINGLE_ENEMY,
+      debuffStat: StatType.ATK,
+      debuffValue: 0,
+      debuffDuration: 1,
+      cooldownTurns: 0,
+    })
+    await skillRepository.create(skill)
+    linkSkill(attacker.id.toString(), skill.id.toString())
+
+    const result = await sut.execute({
+      team1: { members: [{ characterId: attacker.id.toString(), positionRow: 0, positionCol: 0 }] },
+      team2: { members: [{ characterId: target.id.toString(), positionRow: 0, positionCol: 0 }] },
+      battleFieldId: battleField.id.toString(),
+      maxTurns: 1,
+    })
+
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      const firstTurn = JSON.parse(result.value.log[0]!)
+      const action = firstTurn.actions[0]
+      // trait doesn't match the field modifier -> ATK stays at base 10
+      expect(action.damage).toBe(10)
+    }
+  })
 })

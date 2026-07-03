@@ -10,6 +10,7 @@ import type { IBattleRepository } from '../../repositories/interface/battle-repo
 import type { IBattleTeamRepository } from '../../repositories/interface/battle-team-repository'
 import type { ICharacterRepository } from '../../repositories/interface/character-repository'
 import type { ISkillRepository } from '../../repositories/interface/skill-repository'
+import { applyFieldModifiers } from './engine/apply-field-modifiers'
 import { runBattleEngine } from './engine/battle-engine'
 import type { CombatantState } from './engine/types'
 
@@ -98,14 +99,25 @@ export class RunAutoBattleUseCase {
           (c) => c.id.toString() === member.characterId
         )!
         const skills = skillsByCharacter[member.characterId] ?? []
+        const traitIds = char.traits.map((trait) => trait.id)
+        const fieldModifiers = battleField.modifiersFor(traitIds)
+        const { hp, atk, def, spd } = applyFieldModifiers(
+          {
+            hp: char.effectiveHp,
+            atk: char.effectiveAtk,
+            def: char.effectiveDef,
+            spd: char.effectiveSpd,
+          },
+          fieldModifiers
+        )
         return {
           characterId: member.characterId,
           teamNumber,
-          currentHp: char.effectiveHp,
-          maxHp: char.effectiveHp,
-          baseAtk: char.effectiveAtk,
-          baseDef: char.effectiveDef,
-          baseSpd: char.effectiveSpd,
+          currentHp: hp,
+          maxHp: hp,
+          baseAtk: atk,
+          baseDef: def,
+          baseSpd: spd,
           hasDualPower: !!char.secondaryPowerId,
           skillIds: skills.map((s) => s.id.toString()),
           skillCooldowns: {},
