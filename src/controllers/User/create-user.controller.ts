@@ -19,12 +19,23 @@ export class CreateUserController {
     async (req: Request, res: Response): Promise<void> => {
       const { name, email, password } = req.body
 
-      const result = await this.createUserUseCase.execute({ name, email, password })
+      const result = await this.createUserUseCase.execute({
+        name,
+        email,
+        password,
+      })
 
       if (result.isLeft()) {
         res.status(409).json({ message: result.value.message })
         return
       }
+
+      res.cookie('token', result.value.accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      })
 
       res.status(201).json(result.value.user)
     },

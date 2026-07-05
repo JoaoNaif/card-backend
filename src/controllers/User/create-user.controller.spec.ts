@@ -24,6 +24,11 @@ describe('POST /users (CreateUserController)', () => {
     })
     expect(response.body.id).toBeDefined()
     expect(response.body.createdAt).toBeDefined()
+
+    const cookies = response.headers['set-cookie'] as unknown as string[]
+    expect(cookies).toBeDefined()
+    expect(cookies.some((c) => c.startsWith('token='))).toBe(true)
+    expect(cookies.some((c) => c.includes('HttpOnly'))).toBe(true)
   })
 
   it('should return 409 when email is already in use', async () => {

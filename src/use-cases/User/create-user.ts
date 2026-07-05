@@ -4,6 +4,7 @@ import { User } from '../../entities/user'
 import type { IUserRepository } from '../../repositories/interface/user-repository'
 import type { HashGenerator } from '../../repositories/cryptography/core/hash-generator'
 import type { DtoUserRaw } from './dtos/dto-user-raw'
+import type { Encrypter } from '../../repositories/cryptography/core/encrypter'
 
 interface CreateUserUseCaseRequest {
   name: string
@@ -15,12 +16,14 @@ type CreateUserUseCaseResponse = Either<
   ResourceAlreadyExistError,
   {
     user: DtoUserRaw
+    accessToken: string
   }
 >
 export class CreateUserUseCase {
   constructor(
     private userRepository: IUserRepository,
-    private hashGenerator: HashGenerator
+    private hashGenerator: HashGenerator,
+    private encrypter: Encrypter
   ) {}
 
   async execute({
@@ -44,6 +47,10 @@ export class CreateUserUseCase {
 
     await this.userRepository.create(user)
 
+    const accessToken = await this.encrypter.encrypt({
+      sub: user.id.toString(),
+    })
+
     return right({
       user: {
         id: user.id.toString(),
@@ -51,6 +58,7 @@ export class CreateUserUseCase {
         email: user.email,
         createdAt: user.createdAt,
       },
+      accessToken,
     })
   }
 }

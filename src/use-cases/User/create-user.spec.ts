@@ -2,16 +2,19 @@ import { describe, it, expect, beforeEach } from 'vitest'
 import { CreateUserUseCase } from './create-user'
 import { InMemoryUserRepository } from '../../repositories/test/in-memory-user-repository'
 import { BcryptHasher } from '../../repositories/cryptography/bcrypt-hasher'
+import { FakeEncrypter } from '../../test/cryptography/fake-encrypter'
 
 let userRepository: InMemoryUserRepository
 let hashGenerator: BcryptHasher
+let encrypter: FakeEncrypter
 let sut: CreateUserUseCase
 
 describe('CreateUserUseCase', () => {
   beforeEach(() => {
     userRepository = new InMemoryUserRepository()
     hashGenerator = new BcryptHasher()
-    sut = new CreateUserUseCase(userRepository, hashGenerator)
+    encrypter = new FakeEncrypter()
+    sut = new CreateUserUseCase(userRepository, hashGenerator, encrypter)
   })
 
   it('should create a user successfully', async () => {
@@ -29,6 +32,7 @@ describe('CreateUserUseCase', () => {
       expect(result.value.user.email).toBe('john@example.com')
       expect(result.value.user.id).toBeDefined()
       expect(result.value.user.createdAt).toBeInstanceOf(Date)
+      expect(result.value.accessToken).toEqual(expect.any(String))
     }
   })
 
