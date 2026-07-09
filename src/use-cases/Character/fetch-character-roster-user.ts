@@ -1,8 +1,10 @@
 import { left, right, type Either } from '../../core/either'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import type { ICharacterRepository } from '../../repositories/interface/character-repository'
+import type { IPowerRepository } from '../../repositories/interface/power-repository'
 import type { IUserRepository } from '../../repositories/interface/user-repository'
-import type { DtoCharacterRaw } from './dtos/dto-character-raw'
+import type { DtoPowerRaw } from '../Power/dtos/dto-power-raw'
+import type { DtoCharacterRoster } from './dtos/dto_character-roster'
 
 interface FetchCharacterRosterUserUseCaseRequest {
   userId: string
@@ -11,14 +13,15 @@ interface FetchCharacterRosterUserUseCaseRequest {
 type FetchCharacterRosterUserUseCaseResponse = Either<
   ResourceNotFoundError,
   {
-    characters: DtoCharacterRaw[]
+    characters: DtoCharacterRoster[]
   }
 >
 
 export class FetchCharacterRosterUserUseCase {
   constructor(
     private characterRepository: ICharacterRepository,
-    private userRepository: IUserRepository
+    private userRepository: IUserRepository,
+    private powerRepository: IPowerRepository
   ) {}
 
   async execute({
@@ -32,25 +35,43 @@ export class FetchCharacterRosterUserUseCase {
 
     const characters = await this.characterRepository.findManyByUserId(userId)
 
-    return right({
-      characters: characters.map((character) => ({
+    const roster: DtoCharacterRoster[] = []
+
+    for (const character of characters) {
+      const power = await this.powerRepository.findById(character.powerId)
+
+      if (!power) {
+        return left(new ResourceNotFoundError('Power'))
+      }
+
+      const powerDto: DtoPowerRaw = {
+        id: power.id.toString(),
+        name: power.name,
+        description: power.description,
+        pillar: power.pillar,
+        canAwaken: power.canAwaken,
+        isAwakened: power.isAwakened,
+        createdAt: power.createdAt,
+      }
+
+      roster.push({
         id: character.id.toString(),
         name: character.name,
         description: character.description,
         level: character.level,
         ranking: character.ranking,
-        maxRanking: character.maxRanking,
-        breakthroughAttempts: character.breakthroughAttempts,
         xp: character.xp,
         baseAtk: character.baseAtk,
         baseDef: character.baseDef,
         baseHp: character.baseHp,
         baseSpd: character.baseSpd,
         userId: character.userId,
-        powerId: character.powerId,
+        power: powerDto,
         traits: character.traits,
         createdAt: character.createdAt,
-      })),
-    })
+      })
+    }
+
+    return right({ characters: roster })
   }
 }
