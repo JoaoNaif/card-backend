@@ -7,6 +7,7 @@ import { Ranking } from '../../entities/character'
 describe('GET /characters/roster-user (FetchCharacterRosterUserController)', () => {
   afterEach(async () => {
     await prisma.character.deleteMany()
+    await prisma.trait.deleteMany()
     await prisma.power.deleteMany()
     await prisma.user.deleteMany()
   })
@@ -187,6 +188,40 @@ describe('GET /characters/roster-user (FetchCharacterRosterUserController)', () 
       userId: user!.id,
       createdAt: expect.any(String),
     })
+  })
+
+  it('should include traits assigned to the character', async () => {
+    const cookie = await createUserAndGetCookie()
+    const power = await createPower()
+
+    const user = await prisma.user.findUnique({ where: { email: 'user@example.com' } })
+    const trait = await prisma.trait.create({
+      data: { name: 'Voador', description: 'Pode voar' },
+    })
+
+    await prisma.character.create({
+      data: {
+        name: 'Kai',
+        description: 'Warrior',
+        maxRanking: Ranking.CAOTICO,
+        baseHp: 100,
+        baseAtk: 50,
+        baseDef: 30,
+        baseSpd: 20,
+        powerId: power.id,
+        userId: user!.id,
+        traits: { connect: { id: trait.id } },
+      },
+    })
+
+    const response = await request(app)
+      .get('/characters/roster-user')
+      .set('Cookie', cookie)
+
+    expect(response.status).toBe(200)
+    expect(response.body[0].traits).toEqual([
+      { id: trait.id, name: trait.name },
+    ])
   })
 
   it('should return 401 when not authenticated', async () => {
