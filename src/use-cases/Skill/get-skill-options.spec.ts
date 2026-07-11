@@ -8,14 +8,19 @@ import { makeCharacter } from '../../repositories/test/factories/make-character'
 import { GetSkillOptionsUseCase } from './get-skill-options'
 import { InMemorySkillRepository } from '../../repositories/test/in-memory-skill-repository'
 import { InMemoryCharacterSkillRepository } from '../../repositories/test/in-memory-character-skill-repository'
+import { InMemoryPowerRepository } from '../../repositories/test/in-memory-power-repository'
+import { InMemoryBattleFieldRepository } from '../../repositories/test/in-memory-battle-field-repository'
 import { makeCharacterSkill } from '../../repositories/test/factories/make-character-skill'
 import { makeSkill } from '../../repositories/test/factories/make-skill'
+import { makePower } from '../../repositories/test/factories/make-power'
 import { UnavailabelSkillOptionsError } from './err/unavailable-skills-options-error'
 
 let userRepository: InMemoryUserRepository
 let characterRepository: InMemoryCharacterRepository
 let skillRepository: InMemorySkillRepository
 let characterSkillRepository: InMemoryCharacterSkillRepository
+let powerRepository: InMemoryPowerRepository
+let battleFieldRepository: InMemoryBattleFieldRepository
 let sut: GetSkillOptionsUseCase
 
 describe('GetSkillOptionsUseCase', () => {
@@ -24,11 +29,15 @@ describe('GetSkillOptionsUseCase', () => {
     characterRepository = new InMemoryCharacterRepository()
     skillRepository = new InMemorySkillRepository()
     characterSkillRepository = new InMemoryCharacterSkillRepository()
+    powerRepository = new InMemoryPowerRepository()
+    battleFieldRepository = new InMemoryBattleFieldRepository()
     sut = new GetSkillOptionsUseCase(
       characterRepository,
       userRepository,
       skillRepository,
-      characterSkillRepository
+      characterSkillRepository,
+      powerRepository,
+      battleFieldRepository
     )
   })
 
@@ -36,10 +45,14 @@ describe('GetSkillOptionsUseCase', () => {
     const user = makeUser()
     await userRepository.create(user)
 
+    const power = makePower()
+    await powerRepository.create(power)
+
     const character = makeCharacter({
       userId: user.id.toString(),
       pendingSkillSelections: 1,
       level: 10,
+      powerId: power.id.toString(),
     })
     await characterRepository.create(character)
 
@@ -55,6 +68,7 @@ describe('GetSkillOptionsUseCase', () => {
     expect(result.isRight()).toBe(true)
     if (result.isRight()) {
       expect(result.value.options.length).toBeGreaterThan(0)
+      expect(result.value.options[0]?.power.id).toBe(character.powerId)
     }
   })
 
@@ -62,10 +76,14 @@ describe('GetSkillOptionsUseCase', () => {
     const user = makeUser()
     await userRepository.create(user)
 
+    const power = makePower()
+    await powerRepository.create(power)
+
     const character = makeCharacter({
       userId: user.id.toString(),
       pendingSkillSelections: 1,
       level: 10,
+      powerId: power.id.toString(),
     })
     await characterRepository.create(character)
 

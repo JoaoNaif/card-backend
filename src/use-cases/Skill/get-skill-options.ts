@@ -1,11 +1,13 @@
 import { left, right, type Either } from '../../core/either'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import { UnauthorizedError } from '../../core/error/err/unauthorized-error'
+import type { IBattleFieldRepository } from '../../repositories/interface/battle-field-repository'
 import type { ICharacterRepository } from '../../repositories/interface/character-repository'
 import type { ICharacterSkillRepository } from '../../repositories/interface/character-skill-repository'
+import type { IPowerRepository } from '../../repositories/interface/power-repository'
 import type { ISkillRepository } from '../../repositories/interface/skill-repository'
 import type { IUserRepository } from '../../repositories/interface/user-repository'
-import type { DtoSkillRaw } from './dtos/dto-skill-raw'
+import type { DtoSkillAndPower } from './dtos/dto-skill-and-power'
 import { UnavailabelSkillOptionsError } from './err/unavailable-skills-options-error'
 
 const SKILL_OPTIONS_COUNT = 3
@@ -17,7 +19,7 @@ interface GetSkillOptionsUseCaseRequest {
 
 type GetSkillOptionsUseCaseResponse = Either<
   ResourceNotFoundError | UnauthorizedError | UnavailabelSkillOptionsError,
-  { options: DtoSkillRaw[] }
+  { options: DtoSkillAndPower[] }
 >
 
 export class GetSkillOptionsUseCase {
@@ -25,7 +27,9 @@ export class GetSkillOptionsUseCase {
     private characterRepository: ICharacterRepository,
     private userRepository: IUserRepository,
     private skillRepository: ISkillRepository,
-    private characterSkillRepository: ICharacterSkillRepository
+    private characterSkillRepository: ICharacterSkillRepository,
+    private powerRepository: IPowerRepository,
+    private battleFieldRepository: IBattleFieldRepository
   ) {}
 
   async execute({
@@ -63,8 +67,29 @@ export class GetSkillOptionsUseCase {
 
     if (pool.length === 0) return left(new UnavailabelSkillOptionsError())
 
-    const options: DtoSkillRaw[] = pickRandom(pool, SKILL_OPTIONS_COUNT).map(
-      (skill) => ({
+    const picked = pickRandom(pool, SKILL_OPTIONS_COUNT)
+    const options: DtoSkillAndPower[] = []
+
+    for (const skill of picked) {
+      const power = await this.powerRepository.findById(skill.powerId)
+
+      if (!power) {
+        return left(new ResourceNotFoundError('Power'))
+      }
+
+      let battleField = null
+
+      if (skill.appliesBattleFieldId) {
+        battleField = await this.battleFieldRepository.findById(
+          skill.appliesBattleFieldId
+        )
+
+        if (!battleField) {
+          return left(new ResourceNotFoundError('Battle field'))
+        }
+      }
+
+      options.push({
         id: skill.id.toString(),
         name: skill.name,
         description: skill.description,
@@ -84,8 +109,33 @@ export class GetSkillOptionsUseCase {
         targetEffectStat: skill.targetEffectStat ?? null,
         targetEffectValue: skill.targetEffectValue ?? null,
         createdAt: skill.createdAt,
+        power: {
+          id: power.id.toString(),
+          name: power.name,
+          description: power.description,
+          pillar: power.pillar,
+          canAwaken: power.canAwaken,
+          isAwakened: power.isAwakened,
+          createdAt: power.createdAt,
+        },
+        battleField: battleField
+          ? {
+              id: battleField.id.toString(),
+              name: battleField.name,
+              description: battleField.description,
+              modifiers: battleField.modifiers.map((mod) => ({
+                id: mod.id,
+                traitName: mod.traitId,
+                traitId: mod.traitId,
+                bonusType: mod.bonusType,
+                bonusValue: mod.bonusValue,
+                stat: mod.stat,
+              })),
+              createdAt: battleField.createdAt,
+            }
+          : null,
       })
-    )
+    }
 
     return right({ options })
   }

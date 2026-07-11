@@ -1,6 +1,6 @@
 import type { Ranking } from '../../../entities/character'
 import type { DtoPowerRaw } from '../../Power/dtos/dto-power-raw'
-import type { DtoSkillRaw } from '../../Skill/dtos/dto-skill-raw'
+import type { DtoSkillAndPower } from '../../Skill/dtos/dto-skill-and-power'
 
 export interface DtoCharacterFull {
   id: string
@@ -21,6 +21,6 @@ export interface DtoCharacterFull {
   secondaryPower?: DtoPowerRaw | null | undefined
   awakenedPower?: DtoPowerRaw | null | undefined
   traits: { id: string; name: string }[]
-  skills: DtoSkillRaw[]
+  skills: DtoSkillAndPower[]
   createdAt: Date
 }

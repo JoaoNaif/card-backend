@@ -3,10 +3,12 @@ import { InMemoryCharacterRepository } from '../../repositories/test/in-memory-c
 import { InMemoryPowerRepository } from '../../repositories/test/in-memory-power-repository'
 import { InMemoryCharacterSkillRepository } from '../../repositories/test/in-memory-character-skill-repository'
 import { InMemorySkillRepository } from '../../repositories/test/in-memory-skill-repository'
+import { InMemoryBattleFieldRepository } from '../../repositories/test/in-memory-battle-field-repository'
 import { makeCharacter } from '../../repositories/test/factories/make-character'
 import { makePower } from '../../repositories/test/factories/make-power'
 import { makeSkill } from '../../repositories/test/factories/make-skill'
 import { makeCharacterSkill } from '../../repositories/test/factories/make-character-skill'
+import { makeBattleField } from '../../repositories/test/factories/make-battle-field'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import { GetCharacterUseCase } from './get-character'
 
@@ -14,6 +16,7 @@ let characterRepository: InMemoryCharacterRepository
 let powerRepository: InMemoryPowerRepository
 let characterSkillRepository: InMemoryCharacterSkillRepository
 let skillRepository: InMemorySkillRepository
+let battleFieldRepository: InMemoryBattleFieldRepository
 let sut: GetCharacterUseCase
 
 describe('GetCharacterUseCase', () => {
@@ -22,11 +25,13 @@ describe('GetCharacterUseCase', () => {
     powerRepository = new InMemoryPowerRepository()
     characterSkillRepository = new InMemoryCharacterSkillRepository()
     skillRepository = new InMemorySkillRepository()
+    battleFieldRepository = new InMemoryBattleFieldRepository()
     sut = new GetCharacterUseCase(
       characterRepository,
       powerRepository,
       characterSkillRepository,
-      skillRepository
+      skillRepository,
+      battleFieldRepository
     )
   })
 
@@ -74,6 +79,37 @@ describe('GetCharacterUseCase', () => {
       expect(skills).toHaveLength(1)
       expect(skills[0]?.id).toBe(skill.id.toString())
       expect(skills[0]?.name).toBe(skill.name)
+      expect(skills[0]?.power.id).toBe(power.id.toString())
+      expect(skills[0]?.battleField).toBeNull()
+    }
+  })
+
+  it('should return character with skill battle field when present', async () => {
+    const { character, power } = await setup()
+
+    const battleField = makeBattleField({ name: 'Lagoa azul' })
+    await battleFieldRepository.create(battleField)
+
+    const skill = makeSkill({
+      powerId: power.id.toString(),
+      appliesBattleFieldId: battleField.id.toString(),
+      fieldDuration: 3,
+    })
+    await skillRepository.create(skill)
+
+    const characterSkill = makeCharacterSkill({
+      characterId: character.id.toString(),
+      skillId: skill.id.toString(),
+    })
+    await characterSkillRepository.create(characterSkill)
+
+    const result = await sut.execute({ characterId: character.id.toString() })
+
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      const skills = result.value.character.skills
+      expect(skills[0]?.battleField?.name).toBe('Lagoa azul')
+      expect(skills[0]?.fieldDuration).toBe(3)
     }
   })
 
