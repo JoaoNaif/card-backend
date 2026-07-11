@@ -8,6 +8,7 @@ describe('GET /characters/:characterId (GetCharacterController)', () => {
   afterEach(async () => {
     await prisma.characterSkill.deleteMany()
     await prisma.character.deleteMany()
+    await prisma.trait.deleteMany()
     await prisma.skill.deleteMany()
     await prisma.power.deleteMany()
   })
@@ -99,6 +100,23 @@ describe('GET /characters/:characterId (GetCharacterController)', () => {
       id: skill.id,
       name: 'Fireball',
     })
+  })
+
+  it('should include assigned traits and pendingSkillSelections', async () => {
+    const { character } = await createCharacter()
+    const trait = await prisma.trait.create({
+      data: { name: 'Voador', description: 'Pode voar' },
+    })
+    await prisma.character.update({
+      where: { id: character.id },
+      data: { traits: { connect: { id: trait.id } }, pendingSkillSelections: 2 },
+    })
+
+    const response = await request(app).get(`/characters/${character.id}`)
+
+    expect(response.status).toBe(200)
+    expect(response.body.traits).toEqual([{ id: trait.id, name: trait.name }])
+    expect(response.body.pendingSkillSelections).toBe(2)
   })
 
   it('should return 404 when character does not exist', async () => {

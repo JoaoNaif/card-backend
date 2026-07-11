@@ -77,6 +77,12 @@ export class GetSkillOptionsUseCase {
         powerId: skill.powerId,
         appliesBattleFieldId: skill.appliesBattleFieldId ?? null,
         fieldDuration: skill.fieldDuration ?? null,
+        damageMultiplier: skill.damageMultiplier,
+        healMultiplier: skill.healMultiplier,
+        targetType: skill.targetType,
+        targetEffectDuration: skill.targetEffectDuration ?? null,
+        targetEffectStat: skill.targetEffectStat ?? null,
+        targetEffectValue: skill.targetEffectValue ?? null,
         createdAt: skill.createdAt,
       })
     )

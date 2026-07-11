@@ -9,10 +9,10 @@ export interface DtoCharacterRoster {
   ranking: Ranking
   level: number
   xp: number
-  baseHp: number
-  baseAtk: number
-  baseDef: number
-  baseSpd: number
+  hp: number
+  atk: number
+  def: number
+  spd: number
   power: DtoPowerRaw
   traits: { id: string; name: string }[]
   createdAt: Date

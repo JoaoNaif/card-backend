@@ -23,9 +23,12 @@ export class PrismaCharacterRepository implements ICharacterRepository {
   }
 
   async findById(id: string): Promise<Character | null> {
-    const data = await prisma.character.findUnique({ where: { id } })
+    const data = await prisma.character.findUnique({
+      where: { id },
+      include: { traits: { select: { id: true, name: true } } },
+    })
     if (!data) return null
-    return PrismaCharacterMapper.toDomain(data)
+    return PrismaCharacterMapper.toDomain(data, data.traits)
   }
 
   async findByName(name: string): Promise<Character | null> {
