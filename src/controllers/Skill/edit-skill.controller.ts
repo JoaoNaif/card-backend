@@ -21,7 +21,7 @@ export const editSkillBodySchema = z.object({
   damageMultiplier: z.number().optional(),
   healMultiplier: z.number().optional(),
   targetEffectStat: z
-    .enum(Object.values(TargetType) as [TargetType, ...TargetType[]])
+    .enum(Object.values(StatType) as [StatType, ...StatType[]])
     .optional(),
   targetEffectValue: z.number().optional(),
   targetEffectDuration: z.number().optional(),

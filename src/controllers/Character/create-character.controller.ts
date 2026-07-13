@@ -18,6 +18,7 @@ export const createCharacterBodySchema = z.object({
   baseSpd: z.number(),
   powerId: z.string(),
   secondaryPowerId: z.string().optional(),
+  awakenedPowerId: z.string().optional(),
 })
 
 const validateBody = zodValidationPipe(createCharacterBodySchema)
@@ -43,6 +44,7 @@ export class CreateCharacterController {
         baseSpd,
         powerId,
         secondaryPowerId,
+        awakenedPowerId,
       } = req.body
 
       const result = await this.createPowerUseCase.execute({
@@ -60,6 +62,7 @@ export class CreateCharacterController {
         baseHp,
         powerId,
         secondaryPowerId,
+        awakenedPowerId,
       })
 
       if (result.isLeft()) {

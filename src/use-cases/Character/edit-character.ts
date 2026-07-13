@@ -4,12 +4,14 @@ import type { IUserRepository } from '../../repositories/interface/user-reposito
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import { UnauthorizedError } from '../../core/error/err/unauthorized-error'
 import type { ICharacterRepository } from '../../repositories/interface/character-repository'
+import type { Ranking } from '../../entities/character'
 
 interface EditCharacterUseCaseRequest {
   adminId: string
   characterId: string
   name?: string
   description?: string
+  ranking?: Ranking
 }
 
 type EditCharacterUseCaseResponse = Either<
@@ -27,6 +29,7 @@ export class EditCharacterUseCase {
     name,
     description,
     characterId,
+    ranking,
   }: EditCharacterUseCaseRequest): Promise<EditCharacterUseCaseResponse> {
     const user = await this.userRepository.findById(adminId)
 
@@ -47,6 +50,7 @@ export class EditCharacterUseCase {
     }
 
     character.description = description ?? character.description
+    character.ranking = ranking ?? character.ranking
 
     await this.characterRepository.save(character)
 
