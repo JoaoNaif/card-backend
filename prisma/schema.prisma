@@ -220,6 +220,7 @@ model Character {
   traits           Trait[]
   skills           CharacterSkill[]
   battleParticipations BattleParticipant[]
+  pendingSkillChoices  PendingSkillChoice[]
 
   createdAt      DateTime @default(now())
   power          Power    @relation("PrimaryPower", fields: [powerId], references: [id])
@@ -235,4 +236,16 @@ model CharacterSkill {
   assignedAt  DateTime  @default(now())
 
   @@id([characterId, skillId])
+}
+
+model PendingSkillChoice {
+  id             String    @id @default(cuid())
+  characterId    String
+  character      Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+  optionSkillIds String[]
+  chosenSkillId  String?
+  createdAt      DateTime  @default(now())
+  resolvedAt     DateTime?
+
+  @@index([characterId, resolvedAt])
 }

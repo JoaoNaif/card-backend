@@ -7,6 +7,8 @@ import { makeGetSkillOptionsController } from '../controllers/Skill/factories/ma
 import { makeSwapSkillController } from '../controllers/Skill/factories/make-swap-skill.controller'
 import { makeEditSkillController } from '../controllers/Skill/factories/make-edit-skill.controller'
 import { makeRemoveSkillController } from '../controllers/Skill/factories/make-remove-skill.controller'
+import { makeResolveSkillOptionController } from '../controllers/Skill/factories/make-resolve-skill-option.controller'
+import { makeDiscardSkillOptionsController } from '../controllers/Skill/factories/make-discard-skill-options.controller'
 
 const skillRoutes = Router()
 const createSkillController = makeCreateSkillController()
@@ -16,6 +18,8 @@ const getSkillOptionsController = makeGetSkillOptionsController()
 const swapSkillController = makeSwapSkillController()
 const editSkillController = makeEditSkillController()
 const removeSkillController = makeRemoveSkillController()
+const resolveSkillOptionController = makeResolveSkillOptionController()
+const discardSkillOptionsController = makeDiscardSkillOptionsController()
 
 skillRoutes.post('/', authenticate, ...createSkillController.handle)
 skillRoutes.patch('/swap', authenticate, ...swapSkillController.handle)
@@ -26,6 +30,16 @@ skillRoutes.get(
   '/options/:characterId',
   authenticate,
   ...getSkillOptionsController.handle
+)
+skillRoutes.post(
+  '/options/:characterId/choose',
+  authenticate,
+  ...resolveSkillOptionController.handle
+)
+skillRoutes.post(
+  '/options/:characterId/discard',
+  authenticate,
+  ...discardSkillOptionsController.handle
 )
 skillRoutes.get('/:skillId', (req, res) => getSkillController.handle(req, res))
 

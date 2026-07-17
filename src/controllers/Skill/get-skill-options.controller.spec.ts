@@ -5,6 +5,7 @@ import { prisma } from '../../config/prisma'
 
 describe('GET /skills/options/:characterId (GetSkillOptionsController)', () => {
   afterEach(async () => {
+    await prisma.pendingSkillChoice.deleteMany()
     await prisma.characterSkill.deleteMany()
     await prisma.character.deleteMany()
     await prisma.skill.deleteMany()
@@ -93,6 +94,68 @@ describe('GET /skills/options/:characterId (GetSkillOptionsController)', () => {
       name: expect.any(String),
       powerId: power.id,
     })
+  })
+
+  it('should return the same 3 options on a second call, simulating a reload', async () => {
+    const cookie = await createUserAndGetCookie()
+    const user = await prisma.user.findUnique({ where: { email: 'user@example.com' } })
+    const power = await createPower()
+
+    const character = await prisma.character.create({
+      data: {
+        name: 'Kai',
+        description: 'A warrior',
+        maxRanking: 'CAOTICO',
+        baseHp: 100,
+        baseAtk: 50,
+        baseDef: 30,
+        baseSpd: 20,
+        level: 10,
+        pendingSkillSelections: 1,
+        powerId: power.id,
+        userId: user!.id,
+      },
+    })
+
+    await Promise.all(
+      Array.from({ length: 10 }).map((_, i) =>
+        prisma.skill.create({
+          data: {
+            name: `Skill ${i}`,
+            description: 'A skill',
+            limitation: 'Once per turn',
+            cooldownTurns: 0,
+            debuffStat: 'HP',
+            debuffValue: 10,
+            debuffDuration: 2,
+            minLevel: 1,
+            powerId: power.id,
+          },
+        })
+      )
+    )
+
+    const firstResponse = await request(app)
+      .get(`/skills/options/${character.id}`)
+      .set('Cookie', cookie)
+
+    const secondResponse = await request(app)
+      .get(`/skills/options/${character.id}`)
+      .set('Cookie', cookie)
+
+    const firstIds = (firstResponse.body as { id: string }[])
+      .map((s) => s.id)
+      .sort()
+    const secondIds = (secondResponse.body as { id: string }[])
+      .map((s) => s.id)
+      .sort()
+
+    expect(secondIds).toEqual(firstIds)
+
+    const pendingRows = await prisma.pendingSkillChoice.findMany({
+      where: { characterId: character.id },
+    })
+    expect(pendingRows).toHaveLength(1)
   })
 
   it('should exclude already owned skills from the options', async () => {

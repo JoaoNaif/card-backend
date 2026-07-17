@@ -14,6 +14,8 @@ import { makeCharacterSkill } from '../../repositories/test/factories/make-chara
 import { makeSkill } from '../../repositories/test/factories/make-skill'
 import { makePower } from '../../repositories/test/factories/make-power'
 import { UnavailabelSkillOptionsError } from './err/unavailable-skills-options-error'
+import { InMemoryPendingSkillChoiceRepository } from '../../repositories/test/in-memory-pending-skill-choice-repository'
+import { makePendingSkillChoice } from '../../repositories/test/factories/make-pending-skill-choice'
 
 let userRepository: InMemoryUserRepository
 let characterRepository: InMemoryCharacterRepository
@@ -21,6 +23,7 @@ let skillRepository: InMemorySkillRepository
 let characterSkillRepository: InMemoryCharacterSkillRepository
 let powerRepository: InMemoryPowerRepository
 let battleFieldRepository: InMemoryBattleFieldRepository
+let pendingSkillChoiceRepository: InMemoryPendingSkillChoiceRepository
 let sut: GetSkillOptionsUseCase
 
 describe('GetSkillOptionsUseCase', () => {
@@ -31,13 +34,15 @@ describe('GetSkillOptionsUseCase', () => {
     characterSkillRepository = new InMemoryCharacterSkillRepository()
     powerRepository = new InMemoryPowerRepository()
     battleFieldRepository = new InMemoryBattleFieldRepository()
+    pendingSkillChoiceRepository = new InMemoryPendingSkillChoiceRepository()
     sut = new GetSkillOptionsUseCase(
       characterRepository,
       userRepository,
       skillRepository,
       characterSkillRepository,
       powerRepository,
-      battleFieldRepository
+      battleFieldRepository,
+      pendingSkillChoiceRepository
     )
   })
 
@@ -69,6 +74,83 @@ describe('GetSkillOptionsUseCase', () => {
     if (result.isRight()) {
       expect(result.value.options.length).toBeGreaterThan(0)
       expect(result.value.options[0]?.power.id).toBe(character.powerId)
+    }
+  })
+
+  it('should return the same options on repeated calls instead of re-rolling', async () => {
+    const user = makeUser()
+    await userRepository.create(user)
+
+    const power = makePower()
+    await powerRepository.create(power)
+
+    const character = makeCharacter({
+      userId: user.id.toString(),
+      pendingSkillSelections: 1,
+      level: 10,
+      powerId: power.id.toString(),
+    })
+    await characterRepository.create(character)
+
+    for (let i = 0; i < 10; i++) {
+      await skillRepository.create(
+        makeSkill({ powerId: character.powerId, minLevel: 1 })
+      )
+    }
+
+    const first = await sut.execute({
+      userId: user.id.toString(),
+      characterId: character.id.toString(),
+    })
+    const second = await sut.execute({
+      userId: user.id.toString(),
+      characterId: character.id.toString(),
+    })
+
+    expect(first.isRight()).toBe(true)
+    expect(second.isRight()).toBe(true)
+    if (first.isRight() && second.isRight()) {
+      const firstIds = first.value.options.map((s) => s.id).sort()
+      const secondIds = second.value.options.map((s) => s.id).sort()
+      expect(secondIds).toEqual(firstIds)
+    }
+    expect(pendingSkillChoiceRepository.items).toHaveLength(1)
+  })
+
+  it('should read options from an already open pending skill choice', async () => {
+    const user = makeUser()
+    await userRepository.create(user)
+
+    const power = makePower()
+    await powerRepository.create(power)
+
+    const character = makeCharacter({
+      userId: user.id.toString(),
+      pendingSkillSelections: 1,
+      level: 10,
+      powerId: power.id.toString(),
+    })
+    await characterRepository.create(character)
+
+    const skill = makeSkill({ powerId: character.powerId, minLevel: 1 })
+    await skillRepository.create(skill)
+
+    const pending = makePendingSkillChoice({
+      characterId: character.id.toString(),
+      optionSkillIds: [skill.id.toString()],
+    })
+    await pendingSkillChoiceRepository.create(pending)
+
+    const result = await sut.execute({
+      userId: user.id.toString(),
+      characterId: character.id.toString(),
+    })
+
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.options.map((s) => s.id)).toEqual([
+        skill.id.toString(),
+      ])
     }
   })
 

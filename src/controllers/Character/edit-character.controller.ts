@@ -8,7 +8,7 @@ export const editCharacterBodySchema = z.object({
   characterId: z.string(),
   name: z.string().optional(),
   description: z.string().optional(),
-  ranking: z.enum(Object.values(Ranking) as [Ranking, ...Ranking[]]),
+  ranking: z.enum(Object.values(Ranking) as [Ranking, ...Ranking[]]).optional(),
 })
 
 const validateBody = zodValidationPipe(editCharacterBodySchema)

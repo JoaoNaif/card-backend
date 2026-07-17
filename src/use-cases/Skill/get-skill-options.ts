@@ -1,9 +1,12 @@
 import { left, right, type Either } from '../../core/either'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import { UnauthorizedError } from '../../core/error/err/unauthorized-error'
+import { PendingSkillChoice } from '../../entities/pending-skill-choice'
+import type { Skill } from '../../entities/skill'
 import type { IBattleFieldRepository } from '../../repositories/interface/battle-field-repository'
 import type { ICharacterRepository } from '../../repositories/interface/character-repository'
 import type { ICharacterSkillRepository } from '../../repositories/interface/character-skill-repository'
+import type { IPendingSkillChoiceRepository } from '../../repositories/interface/pending-skill-choice-repository'
 import type { IPowerRepository } from '../../repositories/interface/power-repository'
 import type { ISkillRepository } from '../../repositories/interface/skill-repository'
 import type { IUserRepository } from '../../repositories/interface/user-repository'
@@ -29,7 +32,8 @@ export class GetSkillOptionsUseCase {
     private skillRepository: ISkillRepository,
     private characterSkillRepository: ICharacterSkillRepository,
     private powerRepository: IPowerRepository,
-    private battleFieldRepository: IBattleFieldRepository
+    private battleFieldRepository: IBattleFieldRepository,
+    private pendingSkillChoiceRepository: IPendingSkillChoiceRepository
   ) {}
 
   async execute({
@@ -49,25 +53,48 @@ export class GetSkillOptionsUseCase {
       return left(new UnavailabelSkillOptionsError())
     }
 
-    const currentSkills =
-      await this.characterSkillRepository.findAllByCharacterId(characterId)
-    const excludeSkillIds = currentSkills.map((cs) => cs.skillId)
+    const openPending =
+      await this.pendingSkillChoiceRepository.findOpenByCharacterId(
+        characterId
+      )
 
-    const powerIds = [
-      character.powerId,
-      character.secondaryPowerId,
-      character.awakenedPowerId,
-    ].filter((id): id is string => typeof id === 'string')
+    let picked: Skill[]
 
-    const pool = await this.skillRepository.findEligibleForCharacter(
-      powerIds,
-      character.level,
-      excludeSkillIds
-    )
+    if (openPending) {
+      picked = []
+      for (const skillId of openPending.optionSkillIds) {
+        const skill = await this.skillRepository.findById(skillId)
+        if (!skill) return left(new ResourceNotFoundError('Skill'))
+        picked.push(skill)
+      }
+    } else {
+      const currentSkills =
+        await this.characterSkillRepository.findAllByCharacterId(characterId)
+      const excludeSkillIds = currentSkills.map((cs) => cs.skillId)
 
-    if (pool.length === 0) return left(new UnavailabelSkillOptionsError())
+      const powerIds = [
+        character.powerId,
+        character.secondaryPowerId,
+        character.awakenedPowerId,
+      ].filter((id): id is string => typeof id === 'string')
 
-    const picked = pickRandom(pool, SKILL_OPTIONS_COUNT)
+      const pool = await this.skillRepository.findEligibleForCharacter(
+        powerIds,
+        character.level,
+        excludeSkillIds
+      )
+
+      if (pool.length === 0) return left(new UnavailabelSkillOptionsError())
+
+      picked = pickRandom(pool, SKILL_OPTIONS_COUNT)
+
+      const newPending = PendingSkillChoice.create({
+        characterId,
+        optionSkillIds: picked.map((skill) => skill.id.toString()),
+      })
+      await this.pendingSkillChoiceRepository.create(newPending)
+    }
+
     const options: DtoSkillAndPower[] = []
 
     for (const skill of picked) {
@@ -125,7 +152,7 @@ export class GetSkillOptionsUseCase {
               description: battleField.description,
               modifiers: battleField.modifiers.map((mod) => ({
                 id: mod.id,
-                traitName: mod.traitId,
+                traitName: mod.traitName,
                 traitId: mod.traitId,
                 bonusType: mod.bonusType,
                 bonusValue: mod.bonusValue,
