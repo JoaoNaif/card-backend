@@ -10,6 +10,13 @@ export class PrismaTeamMemberRepository implements ITeamMemberRepository {
     })
   }
 
+  async save(teamMember: TeamMember): Promise<void> {
+    await prisma.teamMember.update({
+      where: { id: teamMember.id.toString() },
+      data: PrismaTeamMemberMapper.toPrisma(teamMember),
+    })
+  }
+
   async delete(teamMember: TeamMember): Promise<void> {
     await prisma.teamMember.delete({
       where: { id: teamMember.id.toString() },

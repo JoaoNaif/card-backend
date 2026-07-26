@@ -8,6 +8,13 @@ export class InMemoryTeamMemberRepository implements ITeamMemberRepository {
     this.items.push(teamMember)
   }
 
+  async save(teamMember: TeamMember): Promise<void> {
+    const index = this.items.findIndex((m) => m.id.equals(teamMember.id))
+    if (index >= 0) {
+      this.items[index] = teamMember
+    }
+  }
+
   async delete(teamMember: TeamMember): Promise<void> {
     this.items = this.items.filter((m) => !m.id.equals(teamMember.id))
   }

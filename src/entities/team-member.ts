@@ -21,8 +21,16 @@ export class TeamMember extends Entity<TeamMemberProps> {
     return this.props.positionRow
   }
 
+  set positionRow(positionRow: number) {
+    this.props.positionRow = positionRow
+  }
+
   get positionCol() {
     return this.props.positionCol
+  }
+
+  set positionCol(positionCol: number) {
+    this.props.positionCol = positionCol
   }
 
   static create(props: TeamMemberProps, id?: UniqueEntityId) {

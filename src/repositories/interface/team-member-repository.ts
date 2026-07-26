@@ -2,6 +2,7 @@ import type { TeamMember } from '../../entities/team-member'
 
 export interface ITeamMemberRepository {
   create(teamMember: TeamMember): Promise<void>
+  save(teamMember: TeamMember): Promise<void>
   delete(teamMember: TeamMember): Promise<void>
   findById(id: string): Promise<TeamMember | null>
   findAllByTeamId(teamId: string): Promise<TeamMember[]>
