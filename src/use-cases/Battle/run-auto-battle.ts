@@ -1,4 +1,5 @@
 import { left, right, type Either } from '../../core/either'
+import { TEAM_GRID_SIZE, TEAM_MAX_MEMBERS } from '../../core/constants/team-grid'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import { Battle, BattleMode, BattleStatus } from '../../entities/battle'
 import { BattleParticipant } from '../../entities/battle-participant'
@@ -13,6 +14,7 @@ import type { ISkillRepository } from '../../repositories/interface/skill-reposi
 import { applyFieldModifiers } from './engine/apply-field-modifiers'
 import { runBattleEngine } from './engine/battle-engine'
 import type { CombatantState } from './engine/types'
+import { InvalidTeamCompositionError } from './err/invalid-team-composition-error'
 
 interface TeamMemberInput {
   characterId: string
@@ -40,9 +42,57 @@ interface RunAutoBattleUseCaseResponse {
 }
 
 type RunAutoBattleResponse = Either<
-  ResourceNotFoundError,
+  ResourceNotFoundError | InvalidTeamCompositionError,
   RunAutoBattleUseCaseResponse
 >
+
+function validateTeamComposition(
+  members: TeamMemberInput[],
+  teamLabel: string
+): InvalidTeamCompositionError | null {
+  if (members.length === 0 || members.length > TEAM_MAX_MEMBERS) {
+    return new InvalidTeamCompositionError(
+      `${teamLabel} must have between 1 and ${TEAM_MAX_MEMBERS} members.`
+    )
+  }
+
+  const seenCharacters = new Set<string>()
+  const seenPositions = new Set<string>()
+
+  for (const member of members) {
+    const isValidRow =
+      Number.isInteger(member.positionRow) &&
+      member.positionRow >= 0 &&
+      member.positionRow < TEAM_GRID_SIZE
+    const isValidCol =
+      Number.isInteger(member.positionCol) &&
+      member.positionCol >= 0 &&
+      member.positionCol < TEAM_GRID_SIZE
+
+    if (!isValidRow || !isValidCol) {
+      return new InvalidTeamCompositionError(
+        `${teamLabel} has a member outside the ${TEAM_GRID_SIZE}x${TEAM_GRID_SIZE} grid.`
+      )
+    }
+
+    if (seenCharacters.has(member.characterId)) {
+      return new InvalidTeamCompositionError(
+        `${teamLabel} has a duplicate character.`
+      )
+    }
+    seenCharacters.add(member.characterId)
+
+    const positionKey = `${member.positionRow}-${member.positionCol}`
+    if (seenPositions.has(positionKey)) {
+      return new InvalidTeamCompositionError(
+        `${teamLabel} has two members assigned to the same position.`
+      )
+    }
+    seenPositions.add(positionKey)
+  }
+
+  return null
+}
 
 export class RunAutoBattleUseCase {
   constructor(
@@ -60,6 +110,12 @@ export class RunAutoBattleUseCase {
     battleFieldId,
     maxTurns,
   }: RunAutoBattleUseCaseRequest): Promise<RunAutoBattleResponse> {
+    const team1Error = validateTeamComposition(team1.members, 'Team 1')
+    if (team1Error) return left(team1Error)
+
+    const team2Error = validateTeamComposition(team2.members, 'Team 2')
+    if (team2Error) return left(team2Error)
+
     const battleField = battleFieldId
       ? await this.battleFieldRepository.findById(battleFieldId)
       : await this.battleFieldRepository.findRandom()

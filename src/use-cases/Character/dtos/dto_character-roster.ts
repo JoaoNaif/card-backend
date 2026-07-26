@@ -14,6 +14,7 @@ export interface DtoCharacterRoster {
   def: number
   spd: number
   power: DtoPowerRaw
+  secondaryPower?: DtoPowerRaw | null
   traits: { id: string; name: string }[]
   createdAt: Date
 }

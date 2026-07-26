@@ -44,14 +44,24 @@ export class FetchCharacterRosterUserUseCase {
         return left(new ResourceNotFoundError('Power'))
       }
 
-      const powerDto: DtoPowerRaw = {
-        id: power.id.toString(),
-        name: power.name,
-        description: power.description,
-        pillar: power.pillar,
-        canAwaken: power.canAwaken,
-        isAwakened: power.isAwakened,
-        createdAt: power.createdAt,
+      const toPowerRaw = (p: typeof power): DtoPowerRaw => ({
+        id: p.id.toString(),
+        name: p.name,
+        description: p.description,
+        pillar: p.pillar,
+        canAwaken: p.canAwaken,
+        isAwakened: p.isAwakened,
+        createdAt: p.createdAt,
+      })
+
+      let secondaryPowerDto: DtoPowerRaw | null | undefined = null
+      if (character.secondaryPowerId) {
+        const secondaryPower = await this.powerRepository.findById(
+          character.secondaryPowerId
+        )
+        if (!secondaryPower)
+          return left(new ResourceNotFoundError('SecondaryPower'))
+        secondaryPowerDto = toPowerRaw(secondaryPower)
       }
 
       roster.push({
@@ -66,7 +76,8 @@ export class FetchCharacterRosterUserUseCase {
         hp: character.effectiveHp,
         spd: character.effectiveSpd,
         userId: character.userId,
-        power: powerDto,
+        power: toPowerRaw(power),
+        secondaryPower: secondaryPowerDto,
         traits: character.traits,
         createdAt: character.createdAt,
       })

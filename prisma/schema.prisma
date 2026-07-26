@@ -73,6 +73,7 @@ model User {
   userRole     UserRole    @default(USER)
   characters   Character[]
   battleTeams  BattleTeam[]
+  team         Team?
   createdAt    DateTime    @default(now())
 }
 
@@ -221,6 +222,7 @@ model Character {
   skills           CharacterSkill[]
   battleParticipations BattleParticipant[]
   pendingSkillChoices  PendingSkillChoice[]
+  teamMemberships      TeamMember[]
 
   createdAt      DateTime @default(now())
   power          Power    @relation("PrimaryPower", fields: [powerId], references: [id])
@@ -248,4 +250,26 @@ model PendingSkillChoice {
   resolvedAt     DateTime?
 
   @@index([characterId, resolvedAt])
+}
+
+model Team {
+  id        String       @id @default(cuid())
+  userId    String       @unique
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members   TeamMember[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model TeamMember {
+  id          String    @id @default(cuid())
+  teamId      String
+  characterId String
+  positionRow Int
+  positionCol Int
+  team        Team      @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([teamId, positionRow, positionCol])
+  @@unique([teamId, characterId])
 }

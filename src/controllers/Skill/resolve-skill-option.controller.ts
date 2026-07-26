@@ -5,6 +5,7 @@ import type { ResolveSkillOptionUseCase } from '../../use-cases/Skill/resolve-sk
 
 export const resolveSkillOptionBodySchema = z.object({
   skillId: z.string(),
+  currentSkillId: z.string().optional(),
 })
 
 const validateBody = zodValidationPipe(resolveSkillOptionBodySchema)
@@ -17,12 +18,13 @@ export class ResolveSkillOptionController {
     async (req: Request, res: Response): Promise<void | Response> => {
       const userId = req.user!.sub
       const characterId = req.params['characterId'] as string
-      const { skillId } = req.body
+      const { skillId, currentSkillId } = req.body
 
       const result = await this.resolveSkillOptionUseCase.execute({
         userId,
         characterId,
         skillId,
+        currentSkillId,
       })
 
       if (result.isLeft()) {

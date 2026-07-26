@@ -9,14 +9,17 @@ import type { IPendingSkillChoiceRepository } from '../../repositories/interface
 import type { ISkillRepository } from '../../repositories/interface/skill-repository'
 import type { IUserRepository } from '../../repositories/interface/user-repository'
 import type { DtoCharacterSkillRaw } from '../Character-Skill/dtos/dto-character-skill-raw'
-import { SlotSkillFullError } from '../Character-Skill/err/slot-skill-full-error'
 import { InvalidSkillOptionError } from './err/invalid-skill-option-error'
+import { SkillSwapTargetRequiredError } from './err/skill-swap-target-required-error'
 import { UnavailabelSkillOptionsError } from './err/unavailable-skills-options-error'
+
+const MAX_SKILL_SLOTS = 4
 
 interface ResolveSkillOptionUseCaseRequest {
   userId: string
   characterId: string
   skillId: string
+  currentSkillId?: string
 }
 
 type ResolveSkillOptionUseCaseResponse = Either<
@@ -25,7 +28,7 @@ type ResolveSkillOptionUseCaseResponse = Either<
   | UnavailabelSkillOptionsError
   | InvalidSkillOptionError
   | ResourceAlreadyExistError
-  | SlotSkillFullError,
+  | SkillSwapTargetRequiredError,
   { characterSkill: DtoCharacterSkillRaw }
 >
 
@@ -42,6 +45,7 @@ export class ResolveSkillOptionUseCase {
     userId,
     characterId,
     skillId,
+    currentSkillId,
   }: ResolveSkillOptionUseCaseRequest): Promise<ResolveSkillOptionUseCaseResponse> {
     const user = await this.userRepository.findById(userId)
     if (!user) return left(new ResourceNotFoundError('User'))
@@ -70,7 +74,20 @@ export class ResolveSkillOptionUseCase {
 
     const currentSkills =
       await this.characterSkillRepository.findAllByCharacterId(characterId)
-    if (currentSkills.length >= 4) return left(new SlotSkillFullError())
+
+    if (currentSkills.length >= MAX_SKILL_SLOTS) {
+      if (!currentSkillId) return left(new SkillSwapTargetRequiredError())
+
+      const characterCurrentSkill = await this.characterSkillRepository.findByIds(
+        characterId,
+        currentSkillId
+      )
+      if (!characterCurrentSkill) {
+        return left(new ResourceNotFoundError('Current Skill'))
+      }
+
+      await this.characterSkillRepository.delete(characterCurrentSkill)
+    }
 
     const skill = await this.skillRepository.findById(skillId)
     if (!skill) return left(new ResourceNotFoundError('Skill'))

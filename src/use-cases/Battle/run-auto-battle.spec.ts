@@ -10,6 +10,7 @@ import { InMemorySkillRepository } from '../../repositories/test/in-memory-skill
 import { makeBattleField } from '../../repositories/test/factories/make-battle-field'
 import { makeCharacter } from '../../repositories/test/factories/make-character'
 import { makeSkill } from '../../repositories/test/factories/make-skill'
+import { InvalidTeamCompositionError } from './err/invalid-team-composition-error'
 import { RunAutoBattleUseCase } from './run-auto-battle'
 
 let battleRepository: InMemoryBattleRepository
@@ -386,5 +387,101 @@ describe('RunAutoBattleUseCase', () => {
       // trait doesn't match the field modifier -> ATK stays at base 10
       expect(action.damage).toBe(10)
     }
+  })
+
+  it('should return error when a team has more than 4 members', async () => {
+    const battleField = makeBattleField()
+    await battleFieldRepository.create(battleField)
+
+    const members = []
+    for (let i = 0; i < 5; i++) {
+      const char = makeCharacter()
+      await characterRepository.create(char)
+      members.push({
+        characterId: char.id.toString(),
+        positionRow: Math.floor(i / 3),
+        positionCol: i % 3,
+      })
+    }
+    const charB = makeCharacter()
+    await characterRepository.create(charB)
+
+    const result = await sut.execute({
+      team1: { members },
+      team2: { members: [{ characterId: charB.id.toString(), positionRow: 0, positionCol: 0 }] },
+      battleFieldId: battleField.id.toString(),
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(InvalidTeamCompositionError)
+  })
+
+  it('should return error when a team has duplicate positions', async () => {
+    const battleField = makeBattleField()
+    await battleFieldRepository.create(battleField)
+
+    const charA1 = makeCharacter()
+    const charA2 = makeCharacter()
+    const charB = makeCharacter()
+    await characterRepository.create(charA1)
+    await characterRepository.create(charA2)
+    await characterRepository.create(charB)
+
+    const result = await sut.execute({
+      team1: {
+        members: [
+          { characterId: charA1.id.toString(), positionRow: 0, positionCol: 0 },
+          { characterId: charA2.id.toString(), positionRow: 0, positionCol: 0 },
+        ],
+      },
+      team2: { members: [{ characterId: charB.id.toString(), positionRow: 0, positionCol: 0 }] },
+      battleFieldId: battleField.id.toString(),
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(InvalidTeamCompositionError)
+  })
+
+  it('should return error when a team has the same character twice', async () => {
+    const battleField = makeBattleField()
+    await battleFieldRepository.create(battleField)
+
+    const charA = makeCharacter()
+    const charB = makeCharacter()
+    await characterRepository.create(charA)
+    await characterRepository.create(charB)
+
+    const result = await sut.execute({
+      team1: {
+        members: [
+          { characterId: charA.id.toString(), positionRow: 0, positionCol: 0 },
+          { characterId: charA.id.toString(), positionRow: 0, positionCol: 1 },
+        ],
+      },
+      team2: { members: [{ characterId: charB.id.toString(), positionRow: 0, positionCol: 0 }] },
+      battleFieldId: battleField.id.toString(),
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(InvalidTeamCompositionError)
+  })
+
+  it('should return error when a member position is outside the 3x3 grid', async () => {
+    const battleField = makeBattleField()
+    await battleFieldRepository.create(battleField)
+
+    const charA = makeCharacter()
+    const charB = makeCharacter()
+    await characterRepository.create(charA)
+    await characterRepository.create(charB)
+
+    const result = await sut.execute({
+      team1: { members: [{ characterId: charA.id.toString(), positionRow: 3, positionCol: 0 }] },
+      team2: { members: [{ characterId: charB.id.toString(), positionRow: 0, positionCol: 0 }] },
+      battleFieldId: battleField.id.toString(),
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(InvalidTeamCompositionError)
   })
 })

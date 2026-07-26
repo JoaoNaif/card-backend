@@ -15,7 +15,7 @@ import { makePendingSkillChoice } from '../../repositories/test/factories/make-p
 import { ResolveSkillOptionUseCase } from './resolve-skill-option'
 import { UnavailabelSkillOptionsError } from './err/unavailable-skills-options-error'
 import { InvalidSkillOptionError } from './err/invalid-skill-option-error'
-import { SlotSkillFullError } from '../Character-Skill/err/slot-skill-full-error'
+import { SkillSwapTargetRequiredError } from './err/skill-swap-target-required-error'
 
 let userRepository: InMemoryUserRepository
 let characterRepository: InMemoryCharacterRepository
@@ -179,7 +179,7 @@ describe('ResolveSkillOptionUseCase', () => {
     expect(result.value).toBeInstanceOf(ResourceAlreadyExistError)
   })
 
-  it('should return SlotSkillFullError when roster already has 4 skills', async () => {
+  it('should return SkillSwapTargetRequiredError when roster is full and no currentSkillId is given', async () => {
     const user = makeUser()
     await userRepository.create(user)
 
@@ -212,7 +212,93 @@ describe('ResolveSkillOptionUseCase', () => {
     })
 
     expect(result.isLeft()).toBe(true)
-    expect(result.value).toBeInstanceOf(SlotSkillFullError)
+    expect(result.value).toBeInstanceOf(SkillSwapTargetRequiredError)
+  })
+
+  it('should swap the given current skill for the chosen option when roster is full', async () => {
+    const user = makeUser()
+    await userRepository.create(user)
+
+    const character = makeCharacter({
+      userId: user.id.toString(),
+      pendingSkillSelections: 1,
+    })
+    await characterRepository.create(character)
+
+    const existingSkills = []
+    for (let i = 0; i < 4; i++) {
+      const characterSkill = makeCharacterSkill({
+        characterId: character.id.toString(),
+      })
+      await characterSkillRepository.create(characterSkill)
+      existingSkills.push(characterSkill)
+    }
+
+    const newSkill = makeSkill({ powerId: character.powerId })
+    await skillRepository.create(newSkill)
+
+    await pendingSkillChoiceRepository.create(
+      makePendingSkillChoice({
+        characterId: character.id.toString(),
+        optionSkillIds: [newSkill.id.toString()],
+      })
+    )
+
+    const skillToReplace = existingSkills[0]!
+
+    const result = await sut.execute({
+      userId: user.id.toString(),
+      characterId: character.id.toString(),
+      skillId: newSkill.id.toString(),
+      currentSkillId: skillToReplace.skillId,
+    })
+
+    expect(result.isRight()).toBe(true)
+
+    const roster = await characterSkillRepository.findAllByCharacterId(
+      character.id.toString()
+    )
+    const rosterIds = roster.map((cs) => cs.skillId)
+    expect(rosterIds).toHaveLength(4)
+    expect(rosterIds).not.toContain(skillToReplace.skillId)
+    expect(rosterIds).toContain(newSkill.id.toString())
+  })
+
+  it('should return ResourceNotFoundError when currentSkillId does not belong to the character', async () => {
+    const user = makeUser()
+    await userRepository.create(user)
+
+    const character = makeCharacter({
+      userId: user.id.toString(),
+      pendingSkillSelections: 1,
+    })
+    await characterRepository.create(character)
+
+    for (let i = 0; i < 4; i++) {
+      await characterSkillRepository.create(
+        makeCharacterSkill({ characterId: character.id.toString() })
+      )
+    }
+
+    const newSkill = makeSkill({ powerId: character.powerId })
+    await skillRepository.create(newSkill)
+
+    await pendingSkillChoiceRepository.create(
+      makePendingSkillChoice({
+        characterId: character.id.toString(),
+        optionSkillIds: [newSkill.id.toString()],
+      })
+    )
+
+    const result = await sut.execute({
+      userId: user.id.toString(),
+      characterId: character.id.toString(),
+      skillId: newSkill.id.toString(),
+      currentSkillId: 'not-owned-skill-id',
+    })
+
+    expect(result.isLeft()).toBe(true)
+    expect(result.value).toBeInstanceOf(ResourceNotFoundError)
   })
 
   it('should return UnauthorizedError when character does not belong to user', async () => {

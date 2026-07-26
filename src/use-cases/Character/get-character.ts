@@ -130,7 +130,7 @@ export class GetCharacterUseCase {
               description: skillBattleField.description,
               modifiers: skillBattleField.modifiers.map((mod) => ({
                 id: mod.id,
-                traitName: mod.traitId,
+                traitName: mod.traitName,
                 traitId: mod.traitId,
                 bonusType: mod.bonusType,
                 bonusValue: mod.bonusValue,
