@@ -33,6 +33,12 @@ describe('GET /users/me (GetUserController)', () => {
       email: 'john@example.com',
     })
     expect(response.body.createdAt).toBeDefined()
+    expect(response.body.stats).toEqual({
+      rosterCount: 0,
+      battlesPlayed: 0,
+      wins: 0,
+      winRate: 0,
+    })
   })
 
   it('should return 401 when not authenticated', async () => {

@@ -223,6 +223,7 @@ model Character {
   battleParticipations BattleParticipant[]
   pendingSkillChoices  PendingSkillChoice[]
   teamMemberships      TeamMember[]
+  machineMemberships   MachineMember[]
 
   createdAt      DateTime @default(now())
   power          Power    @relation("PrimaryPower", fields: [powerId], references: [id])
@@ -272,4 +273,25 @@ model TeamMember {
 
   @@unique([teamId, positionRow, positionCol])
   @@unique([teamId, characterId])
+}
+
+model Machine {
+  id        String          @id @default(cuid())
+  label     String          @unique
+  name      String
+  members   MachineMember[]
+  createdAt DateTime        @default(now())
+}
+
+model MachineMember {
+  id          String    @id @default(cuid())
+  machineId   String
+  characterId String
+  positionRow Int
+  positionCol Int
+  machine     Machine   @relation(fields: [machineId], references: [id], onDelete: Cascade)
+  character   Character @relation(fields: [characterId], references: [id], onDelete: Cascade)
+
+  @@unique([machineId, positionRow, positionCol])
+  @@unique([machineId, characterId])
 }

@@ -5,4 +5,5 @@ export interface IBattleTeamRepository {
   save(battleTeam: BattleTeam): Promise<void>
   delete(battleTeam: BattleTeam): Promise<void>
   findById(id: string): Promise<BattleTeam | null>
+  findManyByUserId(userId: string): Promise<BattleTeam[]>
 }

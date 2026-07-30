@@ -16,7 +16,7 @@ import { runBattleEngine } from './engine/battle-engine'
 import type { CombatantState } from './engine/types'
 import { InvalidTeamCompositionError } from './err/invalid-team-composition-error'
 
-interface TeamMemberInput {
+export interface TeamMemberInput {
   characterId: string
   positionRow: number
   positionCol: number
@@ -46,7 +46,7 @@ type RunAutoBattleResponse = Either<
   RunAutoBattleUseCaseResponse
 >
 
-function validateTeamComposition(
+export function validateTeamComposition(
   members: TeamMemberInput[],
   teamLabel: string
 ): InvalidTeamCompositionError | null {

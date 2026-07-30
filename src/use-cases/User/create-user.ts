@@ -57,6 +57,12 @@ export class CreateUserUseCase {
         name: user.name,
         email: user.email,
         createdAt: user.createdAt,
+        stats: {
+          rosterCount: 0,
+          battlesPlayed: 0,
+          wins: 0,
+          winRate: 0,
+        },
       },
       accessToken,
     })

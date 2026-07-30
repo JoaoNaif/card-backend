@@ -38,4 +38,12 @@ export class PrismaBattleRepository implements IBattleRepository {
 
     return PrismaBattleMapper.toDomain(data)
   }
+
+  async findManyByIds(ids: string[]): Promise<Battle[]> {
+    const data = await prisma.battle.findMany({
+      where: { id: { in: ids } },
+    })
+
+    return data.map(PrismaBattleMapper.toDomain)
+  }
 }
