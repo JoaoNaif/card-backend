@@ -56,7 +56,7 @@ describe('GET /battle/machines/:machineId (GetMachineTeamController)', () => {
     })
   }
 
-  it('should return the machine team when it exists', async () => {
+  it('should return the machine team with full character info when it exists', async () => {
     const power = await createPower()
     const char = await createCharacter(power.id)
     await createMachine('M1', char.id)
@@ -67,7 +67,18 @@ describe('GET /battle/machines/:machineId (GetMachineTeamController)', () => {
     expect(response.body).toMatchObject({
       label: 'M1',
       name: 'Sentinelas de Treino',
-      members: [{ characterId: char.id, positionRow: 0, positionCol: 0 }],
+      members: [
+        {
+          characterId: char.id,
+          positionRow: 0,
+          positionCol: 0,
+          character: {
+            id: char.id,
+            power: { id: power.id },
+            skills: [],
+          },
+        },
+      ],
     })
   })
 

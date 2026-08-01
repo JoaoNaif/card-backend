@@ -2,7 +2,8 @@ import { left, right, type Either } from '../../core/either'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import type { IMachineMemberRepository } from '../../repositories/interface/machine-member-repository'
 import type { IMachineRepository } from '../../repositories/interface/machine-repository'
-import type { DtoMachineRaw } from './dtos/dto-machine-raw'
+import type { GetCharacterUseCase } from '../Character/get-character'
+import type { DtoMachineMemberFull, DtoMachineFull } from './dtos/dto-machine-raw'
 
 interface GetMachineTeamUseCaseRequest {
   machineId: string
@@ -10,13 +11,14 @@ interface GetMachineTeamUseCaseRequest {
 
 type GetMachineTeamResponse = Either<
   ResourceNotFoundError,
-  { machine: DtoMachineRaw }
+  { machine: DtoMachineFull }
 >
 
 export class GetMachineTeamUseCase {
   constructor(
     private machineRepository: IMachineRepository,
-    private machineMemberRepository: IMachineMemberRepository
+    private machineMemberRepository: IMachineMemberRepository,
+    private getCharacterUseCase: GetCharacterUseCase
   ) {}
 
   async execute({
@@ -32,16 +34,29 @@ export class GetMachineTeamUseCase {
       machine.id.toString()
     )
 
+    const memberDtos: DtoMachineMemberFull[] = []
+
+    for (const m of members) {
+      const result = await this.getCharacterUseCase.execute({
+        characterId: m.characterId,
+      })
+
+      if (result.isLeft()) return left(result.value)
+
+      memberDtos.push({
+        characterId: m.characterId,
+        positionRow: m.positionRow,
+        positionCol: m.positionCol,
+        character: result.value.character,
+      })
+    }
+
     return right({
       machine: {
         id: machine.id.toString(),
         label: machine.label,
         name: machine.name,
-        members: members.map((m) => ({
-          characterId: m.characterId,
-          positionRow: m.positionRow,
-          positionCol: m.positionCol,
-        })),
+        members: memberDtos,
       },
     })
   }

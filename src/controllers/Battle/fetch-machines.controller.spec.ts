@@ -63,7 +63,7 @@ describe('GET /battle/machines (FetchMachinesController)', () => {
     expect(response.body).toEqual([])
   })
 
-  it('should return all machines with their members', async () => {
+  it('should return all machines with a summarized character for each member', async () => {
     const power = await createPower()
     const char1 = await createCharacter(power.id)
     const char2 = await createCharacter(power.id)
@@ -81,15 +81,41 @@ describe('GET /battle/machines (FetchMachinesController)', () => {
           id: machine1.id,
           label: 'M1',
           name: 'Sentinelas de Treino',
-          members: [{ characterId: char1.id, positionRow: 0, positionCol: 0 }],
+          members: [
+            expect.objectContaining({
+              characterId: char1.id,
+              positionRow: 0,
+              positionCol: 0,
+              character: expect.objectContaining({
+                id: char1.id,
+                power: expect.objectContaining({ id: power.id }),
+              }),
+            }),
+          ],
         }),
         expect.objectContaining({
           id: machine2.id,
           label: 'M2',
           name: 'Guardiões Avançados',
-          members: [{ characterId: char2.id, positionRow: 0, positionCol: 0 }],
+          members: [
+            expect.objectContaining({
+              characterId: char2.id,
+              positionRow: 0,
+              positionCol: 0,
+              character: expect.objectContaining({
+                id: char2.id,
+                power: expect.objectContaining({ id: power.id }),
+              }),
+            }),
+          ],
         }),
       ])
     )
+
+    const member = response.body
+      .find((m: { label: string }) => m.label === 'M1')
+      .members[0]
+    expect(member.character.skills).toBeUndefined()
+    expect(member.character.traits).toBeUndefined()
   })
 })
