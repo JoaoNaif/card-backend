@@ -36,6 +36,10 @@ export class Battle extends Entity<BattleProps> {
     return this.props.status
   }
 
+  set status(status: BattleStatus) {
+    this.props.status = status
+  }
+
   get battleFieldId() {
     return this.props.battleFieldId
   }
@@ -44,8 +48,16 @@ export class Battle extends Entity<BattleProps> {
     return this.props.winnerTerm
   }
 
+  set winnerTerm(winnerTerm: number | null | undefined) {
+    this.props.winnerTerm = winnerTerm
+  }
+
   get totalTurns() {
     return this.props.totalTurns
+  }
+
+  set totalTurns(totalTurns: number) {
+    this.props.totalTurns = totalTurns
   }
 
   get maxTurns() {
@@ -56,8 +68,16 @@ export class Battle extends Entity<BattleProps> {
     return this.props.log
   }
 
+  set log(log: string[]) {
+    this.props.log = log
+  }
+
   get sessionState() {
     return this.props.sessionState
+  }
+
+  set sessionState(sessionState: string[] | null | undefined) {
+    this.props.sessionState = sessionState
   }
 
   get createdAt() {
@@ -66,6 +86,10 @@ export class Battle extends Entity<BattleProps> {
 
   get updatedAt() {
     return this.props.updatedAt
+  }
+
+  set updatedAt(updatedAt: Date) {
+    this.props.updatedAt = updatedAt
   }
 
   static create(

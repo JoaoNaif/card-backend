@@ -1,357 +1,107 @@
-# Design v2 — Sistema de Batalha, Poderes e Rankings
+# Design — Sistema de Aquisição de Personagens (Leilão em Tempo Real)
 
-Este documento detalha todas as mudanças de design decididas para a segunda fase do projeto, com o objetivo de criar batalhas estratégicas onde ranking é potencial, não poder absoluto.
+> Este documento substitui a versão anterior do `DESIGN_v2.md` (rankings, pilares, debuff, dual power, despertar), que já está totalmente implementada no schema atual — ver `CLAUDE.md`, item 4 do roadmap (✅ Schema v2). A partir daqui o arquivo passa a documentar a próxima frente de design: **como um jogador adquire um personagem**.
 
 ---
 
-## 1. Rankings — Novos Nomes e Nova Filosofia
+## 1. Contexto e Problema
 
-### Novos nomes (enum `Ranking`)
+Hoje não existe nenhum caminho para um `Character` sair do "estoque" (`userId: null`) e passar a pertencer a um `User`. O admin cria personagens, mas eles ficam sem dono para sempre. Como cada personagem é **único** (`name @unique`, sem duplicatas), qualquer forma de aquisição precisa lidar com concorrência: só um jogador pode ficar com aquele personagem.
 
-```
-Discreto → Contínuo → Diferenciável → Não-Linear → Singular → Divergente → Caótico
-```
+## 2. Ideia Central: Leilão em Tempo Real
 
-### Filosofia: Ranking = Potencial, não Poder
+O admin cria um personagem e o disponibiliza em leilão. Jogadores dão lances em tempo real durante uma janela de tempo definida. Ao final, quem deu o maior lance fica com o personagem; o valor é debitado da sua carteira e os lances perdedores são devolvidos.
 
-**Regra central:** todos os rankings têm a **mesma taxa de crescimento de stat por nível**. O que diferencia os rankings é exclusivamente o **teto de nível máximo**.
+**Por que tempo real (WebSocket) em vez de só REST com timestamp de fechamento:** além de ser mais fiel à experiência de leilão (ver lances subindo ao vivo, reagir na hora), é um exercício de aprendizado que antecipa a Fase 6C (PvP), que já está no roadmap com Socket.io. Implementar o leilão primeiro é uma forma de validar essa infraestrutura de WebSocket num contexto mais simples (sem a complexidade de um motor de batalha) antes de usá-la no PvP.
 
-| Ranking | Nível Máximo |
+## 3. Escopo Restrito por Ranking
+
+Leilão vale **só para os rankings mais altos** — reforça a escassez que o próprio sistema de `Ranking` já define, em vez de criar uma escassez paralela.
+
+| Ranking | Via leilão? |
 |---|---|
-| Discreto | 20 |
-| Contínuo | 40 |
-| Diferenciável | 60 |
-| Não-Linear | 80 |
-| Singular | 100 |
-| Divergente | 100 |
-| Caótico | 100 |
+| Discreto / Contínuo / Diferenciável / Não-Linear | Não — forma de aquisição a definir em outro momento (compra direta, recompensa de progressão, etc.) |
+| Singular / Divergente / Caótico | **Sim** |
 
-**Taxa de crescimento uniforme:** `base + floor(base × GROWTH_RATE × (level - 1))`  
-A constante `GROWTH_RATE` é a mesma para todos os rankings — valor exato a calibrar em testes, sugestão inicial: `0.10` (10% por nível).
+A forma de aquisição dos ranks baixos fica fora do escopo deste documento.
 
-**Consequência prática:** um personagem Discreto nível 20 tem os mesmos stats efetivos que um Caótico nível 20. O Caótico apenas pode continuar crescendo até 100.
+## 4. Pré-requisitos (bloqueadores atuais)
 
----
+Nenhum destes existe hoje — precisam ser resolvidos **antes** de detalhar schema e use cases do leilão:
 
-## 2. Pilares de Poder
+1. **Sistema de moeda** — não há `Wallet`/saldo em nenhum lugar do schema. Precisa existir uma entidade de saldo por `User` e um jeito transacional de debitar/creditar.
+2. **Sistema de recompensa** — de onde a moeda nasce. O candidato natural é o **Auto Battle (Fase 6A)**, ainda não implementado: batalhas vencidas geram moeda. Sem isso, a economia do leilão não tem fonte.
 
-Cada `Power` pertence a um dos 5 pilares. O pilar define o **tipo de custo** que as skills daquele poder impõem ao usuário.
+Ou seja: o leilão depende, na prática, da Fase 6A já estar de pé.
 
-| Pilar | Descrição | Stat que a skill consome |
-|---|---|---|
-| **Material** | Manipulação de matéria e energia física | HP |
-| **Vetorial** | Manipulação de força, impacto e movimento | ATK |
-| **Biológica** | Adaptação, mutação e regeneração orgânica | SPD |
-| **Psíquica** | Percepção, emoção, ilusão e influência mental | DEF |
-| **Fundamental** | Tempo, Alma, Antimatéria — estruturas profundas da realidade | Definido por skill (qualquer stat, podendo ser múltiplos) |
+## 5. Conceito de Funcionamento (rascunho)
 
-O custo de cada skill é fixo e definido pelo admin no momento da criação. O pilar indica qual "categoria" de stat será consumida, mas o valor exato depende da skill.
+1. Admin cria um `AuctionListing` para um `Character` (rank Singular/Divergente/Caótico), define lance inicial e duração.
+2. Leilão abre — jogadores se conectam via WebSocket à sala do leilão.
+3. Jogador envia lance (`bid:place`); servidor valida:
+   - saldo suficiente na carteira
+   - lance maior que o lance atual (+ incremento mínimo, a definir)
+4. Servidor confirma o lance a todos os conectados (`bid:update`) e reserva o valor do saldo do jogador (escrow), liberando a reserva anterior do jogador que foi superado.
+5. Ao expirar o tempo, servidor fecha o leilão (`auction:closed`): transfere o `Character` para o vencedor (`userId`), debita definitivamente o saldo dele, devolve as reservas de todos os outros lances.
 
----
+## 6. Perguntas em Aberto (a decidir antes de implementar)
 
-## 3. Sistema de Custo como Debuff
+- **Anti-sniping:** lance nos últimos N segundos estende o leilão automaticamente? (comum em leilões reais para evitar lance de última hora sem chance de resposta)
+- **Incremento mínimo de lance:** valor fixo ou percentual sobre o lance atual?
+- **Escrow:** reservar o saldo no momento do lance (mais seguro, evita lance sem fundo) ou só validar/debitar no fechamento?
+- **Auto-bid** (jogador define um teto e o sistema cobre automaticamente até esse valor): fica para uma iteração futura ou entra já na v1?
+- **Leilão sem lances:** o que acontece? Volta pro estoque? Reabre com lance inicial menor?
+- **Concorrência no servidor:** lances quase simultâneos precisam de lock/transação atômica no banco para não haver dois "maiores lances" ao mesmo tempo.
 
-Skills não custam mana nem energia. Em vez disso, usar uma skill **impõe um debuff temporário de stat** no próprio personagem.
-
-### Campos na skill
-
-| Campo | Tipo | Descrição |
-|---|---|---|
-| `debuffStat` | `StatType` | Qual stat é reduzido (HP, ATK, DEF, SPD) |
-| `debuffValue` | `Float` | Quanto é reduzido (valor absoluto) |
-| `debuffDuration` | `Int` | Quantos turnos o debuff dura |
-
-### Exemplo
-
-```
-Skill: "Pulso de Calor" (Material)
-debuffStat: HP
-debuffValue: 30
-debuffDuration: 2
-```
-
-Ao usar, o personagem perde 30 de HP imediatamente por 2 turnos (após esses turnos, o HP retorna ao valor anterior ao debuff).
-
-### Skills Fundamentais
-
-O admin define explicitamente quais stats são consumidos. Uma skill Fundamental pode consumir múltiplos stats ao mesmo tempo — é o único pilar com essa capacidade, refletindo o custo imprevisível de manipular a lógica da realidade.
-
----
-
-## 4. Dual Power — Dois Poderes por Personagem
-
-Um personagem pode ter até **2 poderes** simultaneamente.
-
-### Regra de custo
-
-Personagens com dual power pagam um **multiplicador global de 1.25×** em todos os seus custos de debuff.
-
-**Exemplo:**
-- Skill "Pulso de Calor" normalmente custa 30 HP por 2 turnos
-- Em um personagem com dual power: `30 × 1.25 = 37.5` → arredondado para 38 HP por 2 turnos
-
-O multiplicador é aplicado na engine em runtime — não muda o valor base da skill no banco.
-
-### Validação
-
-- Máximo 2 poderes por personagem (validado no use case)
-- `powerId` = poder primário (obrigatório)
-- `secondaryPowerId` = poder secundário (opcional)
-
----
-
-## 5. Sistema de Despertar
-
-Personagens podem despertar seu poder primário em uma forma mais avançada.
-
-### Quem pode despertar
-
-Definido no modelo `Power` com o campo `canAwaken: Boolean`. Exemplo:
-- Fogo → pode despertar
-- Tempo → não pode despertar
-
-### Como funciona
-
-1. O personagem atinge o **nível 20**
-2. A cada nível múltiplo de 5 a partir daí (20, 25, 30, 35...) há uma **chance de despertar**
-3. A chance % é fixa e calibrada depois (sugestão inicial: 15%)
-4. Se despertar: o sistema escolhe **aleatoriamente** uma das formas possíveis do poder
-
-**Exemplo:** Fogo pode despertar para Magma ou Plasma. O resultado é sorteado na hora.
-
-### O que muda com o despertar
-
-- O personagem ganha acesso a **skills exclusivas** da forma despertada
-- Skills anteriores do poder base **permanecem disponíveis**
-- O pilar **não muda** (Fogo é Material → Magma continua sendo Material)
-- A forma despertada é **permanente** — não há como reverter
-
-### Modelo de dados
-
-```
-Power (Fogo) → canAwaken: true
-  └── PowerAwakening → awakenedPower: Power (Magma)
-  └── PowerAwakening → awakenedPower: Power (Plasma)
-
-Character
-  └── powerId: "fogo-id"
-  └── awakenedPowerId: null        ← antes do despertar
-  └── awakenedPowerId: "magma-id"  ← após o despertar
-```
-
----
-
-## 6. Modos de Batalha
-
-O sistema de batalha é implementado em três fases progressivas, cada uma construída sobre a anterior.
-
-### Fase A — Auto Battle (Implementar primeiro)
-
-Ambos os times são controlados por IA. O jogador monta os times e submete — a engine resolve a batalha inteiramente e devolve o log completo.
-
-- **Endpoint:** `POST /battles/auto`
-- **Request:** `{ team1: string[], team2: string[], battleFieldId?: string, maxTurns?: number }`
-- **Response:** `{ winner: 1 | 2 | "draw", totalTurns: number, log: TurnLog[] }`
-- **Seleção de skill:** aleatória entre as disponíveis (não em cooldown)
-- **Infraestrutura:** REST puro, sem estado persistente entre requests
-
-### Fase B — Player vs IA / PvE (Implementar segundo)
-
-O jogador controla um time em tempo real, escolhendo a skill de cada personagem turno a turno. O time adversário é controlado pela IA.
-
-- **Endpoint criação:** `POST /battles/pve` → cria sessão, retorna `battleId` + estado inicial
-- **Endpoint de turno:** `POST /battles/:id/turn` → jogador envia `{ characterId, skillId }`, servidor processa turno completo (ação do jogador + resposta da IA) e devolve resultado
-- **Estado:** sessão de batalha mantida em memória (`Map<battleId, BattleState>`)
-- **Infraestrutura:** REST + estado em memória — sem WebSocket
-
-### Fase C — Player vs Player / PvP (Implementar por último)
-
-Dois jogadores reais escolhem skills em tempo real em turnos simultâneos ou alternados.
-
-- **Infraestrutura:** WebSocket (Socket.io) rodando junto com o Express
-- **Eventos:** `battle:join`, `battle:skill`, `battle:turn-result`, `battle:end`
-- **Estado:** sessão compartilhada entre os dois clientes conectados
-- **Depende de:** Fase B estar estável (mesma lógica de turno, só muda quem decide a skill)
-
----
-
-## 7. Campos de Batalha (Resumo — já implementado)
-
-- Toda batalha começa com um **BattleField aleatório** que dura até o fim
-- Skills podem ativar um novo campo mid-battle via `appliesBattleFieldId` + `fieldDuration` (turnos)
-- Quando `fieldDuration` expira, retorna ao campo anterior
-- `BattleFieldModifier` aplica buffs/debuffs de stat baseados nas traits dos personagens
-
----
-
-## 7. Mudanças no Schema
-
-### Enum `Ranking` — renomear valores
+## 7. Esboço de Schema (rascunho — não implementar ainda)
 
 ```prisma
-enum Ranking {
-  DISCRETO
-  CONTINUO
-  DIFERENCIAVEL
-  NAO_LINEAR
-  SINGULAR
-  DIVERGENTE
-  CAOTICO
+model Wallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id])
+  balance   Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+model AuctionListing {
+  id           String        @id @default(cuid())
+  characterId  String        @unique
+  character    Character     @relation(fields: [characterId], references: [id])
+  startingBid  Int
+  currentBid   Int
+  currentBidUserId String?
+  status       AuctionStatus @default(OPEN) // OPEN | CLOSED | CANCELLED
+  opensAt      DateTime
+  closesAt     DateTime
+  bids         Bid[]
+  createdAt    DateTime      @default(now())
+}
+
+model Bid {
+  id        String         @id @default(cuid())
+  auctionId String
+  auction   AuctionListing @relation(fields: [auctionId], references: [id])
+  userId    String
+  amount    Int
+  createdAt DateTime       @default(now())
 }
 ```
 
-### Novo enum `Pillar`
+Isso é só um ponto de partida para discussão — nomes, campos e a necessidade de uma tabela de "reserva" separada do `Bid` histórico ainda precisam ser validados quando formos implementar de fato.
 
-```prisma
-enum Pillar {
-  MATERIAL
-  VETORIAL
-  BIOLOGICA
-  PSIQUICA
-  FUNDAMENTAL
-}
-```
+## 8. Ordem Sugerida de Implementação (alto nível, a refinar)
 
-### Model `Power` — adicionar pilar e despertar
+1. **Sistema de moeda** (`Wallet` + operações transacionais de crédito/débito)
+2. **Sistema de recompensa** ligado à Fase 6A (Auto Battle) — batalha vencida gera moeda
+3. **Leilão** propriamente dito — listings, lances via WebSocket, fechamento e transferência de personagem
 
-```prisma
-model Power {
-  id               String           @id @default(cuid())
-  name             String           @unique
-  description      String
-  pillar           Pillar
-  canAwaken        Boolean          @default(false)
-  skills           Skill[]
-  primaryCharacters    Character[]  @relation("PrimaryPower")
-  secondaryCharacters  Character[]  @relation("SecondaryPower")
-  awakenedCharacters   Character[]  @relation("AwakenedPower")
-  awakeningTargets     PowerAwakening[] @relation("BaseAwakening")
-  awakeningSourceOf    PowerAwakening[] @relation("AwakenedResult")
-  createdAt        DateTime         @default(now())
-}
-```
+## 9. Fora de Escopo por Ora
 
-### Novo model `PowerAwakening`
-
-```prisma
-model PowerAwakening {
-  id              String @id @default(cuid())
-  basePowerId     String
-  awakenedPowerId String
-  basePower       Power  @relation("BaseAwakening", fields: [basePowerId], references: [id])
-  awakenedPower   Power  @relation("AwakenedResult", fields: [awakenedPowerId], references: [id])
-
-  @@unique([basePowerId, awakenedPowerId])
-}
-```
-
-### Model `Skill` — substituir `cost` por campos de debuff
-
-```prisma
-model Skill {
-  // remover: cost Int
-  debuffStat      StatType
-  debuffValue     Float
-  debuffDuration  Int
-  // resto permanece igual
-}
-```
-
-### Model `Character` — dual power + despertar
-
-```prisma
-model Character {
-  // manter powerId como poder primário
-  secondaryPowerId String?
-  awakenedPowerId  String?
-
-  power          Power  @relation("PrimaryPower", fields: [powerId], references: [id])
-  secondaryPower Power? @relation("SecondaryPower", fields: [secondaryPowerId], references: [id])
-  awakenedPower  Power? @relation("AwakenedPower", fields: [awakenedPowerId], references: [id])
-
-  // remover: growthRate (agora é constante global na engine)
-}
-```
+- Leilão para ranks baixos (Discreto até Não-Linear)
+- Auto-bid
+- Qualquer forma de troca/marketplace entre jogadores (personagem trocado diretamente, sem leilão)
 
 ---
 
-## 8. Constante Global na Engine
-
-O `GROWTH_RATE` deixa de ser por ranking e passa a ser uma constante no código da engine de batalha:
-
-```typescript
-const GROWTH_RATE = 0.10 // 10% por nível — calibrar com testes
-```
-
-Stats efetivos calculados na engine: `base + Math.floor(base * GROWTH_RATE * (level - 1))`
-
----
-
-## 9. Passo a Passo de Implementação
-
-### Fase 1 — Schema e Banco (fundação, sem lógica de negócio)
-
-1. **Renomear enum `Ranking`** no schema e criar migration
-2. **Adicionar enum `Pillar`** ao schema
-3. **Atualizar model `Power`** — adicionar `pillar`, `canAwaken`, relações de despertar
-4. **Criar model `PowerAwakening`** — tabela de possíveis despertares
-5. **Atualizar model `Skill`** — remover `cost`, adicionar `debuffStat`, `debuffValue`, `debuffDuration`
-6. **Atualizar model `Character`** — adicionar `secondaryPowerId`, `awakenedPowerId`, remover `growthRate` se existir
-7. Rodar `npm run db:migrate` e `npm run db:generate`
-
-### Fase 2 — Entidades de Domínio
-
-8. Atualizar entidade `Character` (dual power, sem growthRate)
-9. Atualizar entidade `Skill` (novos campos de debuff)
-10. Atualizar entidade `Power` (pilar, canAwaken)
-11. Criar entidade `PowerAwakening`
-
-### Fase 3 — Repositórios e Mappers
-
-12. Atualizar `prisma-character-mapper` (secondaryPowerId, awakenedPowerId)
-13. Atualizar `prisma-skill-mapper` (debuffStat, debuffValue, debuffDuration)
-14. Atualizar `prisma-power-mapper` (pillar, canAwaken)
-15. Criar `prisma-power-awakening-repository` e mapper
-16. Criar `in-memory-power-awakening-repository` (testes)
-17. Atualizar repositório de Character para queries com dual power
-
-### Fase 4 — Use Cases
-
-18. **`create-power`** — validar que `pillar` é obrigatório
-19. **`create-skill`** — usar novos campos de debuff em vez de `cost`
-20. **`create-character`** — aceitar `secondaryPowerId` opcional; validar max 2 powers
-21. **`gain-xp`** — adicionar lógica de verificação de despertar (nível >= 40, múltiplo de 5, `canAwaken`, chance aleatória)
-22. **`awaken-character`** — use case de despertar (sorteia entre `PowerAwakening` do poder base)
-
-### Fase 5 — Controllers e Rotas
-
-23. Atualizar `create-character` controller (secondaryPowerId no body)
-24. Atualizar `create-skill` controller (campos de debuff)
-25. Atualizar `create-power` controller (pillar no body)
-26. Adicionar rota e factory para `awaken-character` se necessário expor endpoint
-
-### Fase 6A — Engine de Batalha (Auto Battle)
-
-27. **`BattleEngine`** — serviço puro TypeScript em `src/use-cases/Battle/`
-    - Calcula stats efetivos com `GROWTH_RATE` uniforme
-    - Aplica modificadores do BattleField (por trait)
-    - Aplica multiplicador 1.25× de dual power no debuff
-    - Ordena ação por SPD efetivo
-    - Seleciona skill aleatoriamente entre as disponíveis
-    - Aplica debuffs/buffs e remove ao expirar
-    - Retorna log turno a turno
-28. **`POST /battles/auto`** — controller que recebe team1[], team2[], battleFieldId?, maxTurns?, executa engine e retorna log completo
-29. **`GET /characters/roster/:userId`** — lista os personagens do roster de um usuário para montar times
-
-### Fase 6B — PvE (Player vs IA)
-
-30. **`BattleSession`** — estrutura de sessão em memória (`Map<battleId, BattleSession>`)
-31. **`POST /battles/pve`** — cria sessão PvE, retorna battleId + estado inicial do turno
-32. **`POST /battles/:id/turn`** — recebe `{ characterId, skillId }` do jogador, processa turno completo (jogador + IA), retorna resultado
-33. **`GET /battles/:id`** — retorna estado atual da batalha (para o jogador reconectar se necessário)
-
-### Fase 6C — PvP (Player vs Player) — Futuro
-
-34. Adicionar Socket.io ao servidor Express
-35. Eventos: `battle:join`, `battle:skill`, `battle:turn-result`, `battle:end`
-36. Reutiliza a lógica de turno da Fase 6B — só muda quem decide a skill (dois humanos em vez de um humano + IA)
+**Status:** 🟡 Ideia validada. Falta resolver os pré-requisitos (moeda + recompensa) antes de fechar o schema e os use cases definitivos do leilão.

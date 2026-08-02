@@ -1,4 +1,19 @@
-import type { StatType } from '../../../entities/skill'
+import type { StatType, TargetType } from '../../../entities/skill'
+
+/** Minimal shape the engine needs from a skill — the `Skill` entity satisfies this structurally. */
+export interface SkillLike {
+  name: string
+  damageMultiplier: number
+  healMultiplier: number
+  targetType: TargetType
+  debuffStat: StatType
+  debuffValue: number
+  debuffDuration: number
+  cooldownTurns: number
+  targetEffectStat?: StatType | null
+  targetEffectValue?: number | null
+  targetEffectDuration?: number | null
+}
 
 export interface ActiveEffect {
   stat: StatType

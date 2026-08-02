@@ -238,4 +238,42 @@ describe('ListBattleHistoryUseCase', () => {
       expect(result.value.battles[0]!.outcome).toBe('DRAW')
     }
   })
+
+  it('marks the outcome as ONGOING (not DRAW) when a PvE battle is still active', async () => {
+    const me = makeUser()
+    await userRepository.create(me)
+
+    const battle = Battle.create({
+      mode: BattleMode.PVE,
+      status: BattleStatus.ACTIVE,
+      battleFieldId: 'field-1',
+      winnerTerm: null,
+      totalTurns: 2,
+      log: [],
+    })
+    await battleRepository.create(battle)
+
+    await battleTeamRepository.create(
+      BattleTeam.create({
+        battleId: battle.id.toString(),
+        teamNumber: 1,
+        userId: me.id.toString(),
+      })
+    )
+    await battleTeamRepository.create(
+      BattleTeam.create({
+        battleId: battle.id.toString(),
+        teamNumber: 2,
+        userId: null,
+      })
+    )
+
+    const result = await sut.execute({ userId: me.id.toString() })
+
+    expect(result.isRight()).toBe(true)
+    if (result.isRight()) {
+      expect(result.value.battles[0]!.outcome).toBe('ONGOING')
+      expect(result.value.battles[0]!.status).toBe('ACTIVE')
+    }
+  })
 })

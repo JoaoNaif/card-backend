@@ -1,5 +1,5 @@
 import { right, type Either } from '../../core/either'
-import type { BattleMode, BattleStatus } from '../../entities/battle'
+import { BattleStatus, type BattleMode } from '../../entities/battle'
 import type { IBattleRepository } from '../../repositories/interface/battle-repository'
 import type { IBattleTeamRepository } from '../../repositories/interface/battle-team-repository'
 import type { IUserRepository } from '../../repositories/interface/user-repository'
@@ -8,7 +8,7 @@ interface ListBattleHistoryUseCaseRequest {
   userId: string
 }
 
-type BattleOutcome = 'WIN' | 'LOSS' | 'DRAW'
+type BattleOutcome = 'WIN' | 'LOSS' | 'DRAW' | 'ONGOING'
 
 interface BattleHistoryItem {
   battleId: string
@@ -78,11 +78,13 @@ export class ListBattleHistoryUseCase {
       const opponentTeam = teams.find((t) => t.userId !== userId) ?? null
 
       const outcome: BattleOutcome =
-        battle.winnerTerm == null
-          ? 'DRAW'
-          : battle.winnerTerm === myTeam.teamNumber
-            ? 'WIN'
-            : 'LOSS'
+        battle.status !== BattleStatus.COMPLETED
+          ? 'ONGOING'
+          : battle.winnerTerm == null
+            ? 'DRAW'
+            : battle.winnerTerm === myTeam.teamNumber
+              ? 'WIN'
+              : 'LOSS'
 
       return {
         battleId,
