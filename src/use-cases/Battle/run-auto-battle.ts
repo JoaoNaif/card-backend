@@ -13,7 +13,7 @@ import type { ICharacterRepository } from '../../repositories/interface/characte
 import type { ISkillRepository } from '../../repositories/interface/skill-repository'
 import { applyFieldModifiers } from './engine/apply-field-modifiers'
 import { runBattleEngine } from './engine/battle-engine'
-import type { CombatantState } from './engine/types'
+import type { CombatantState, TurnLog } from './engine/types'
 import { InvalidTeamCompositionError } from './err/invalid-team-composition-error'
 
 export interface TeamMemberInput {
@@ -34,11 +34,19 @@ interface RunAutoBattleUseCaseRequest {
   maxTurns?: number
 }
 
+interface ParticipantInfo {
+  name: string
+  teamNumber: 1 | 2
+  maxHp: number
+}
+
 interface RunAutoBattleUseCaseResponse {
   battleId: string
   winnerTeam: 1 | 2 | null
   totalTurns: number
-  log: string[]
+  participants: Record<string, ParticipantInfo>
+  skills: Record<string, string>
+  log: TurnLog[]
 }
 
 type RunAutoBattleResponse = Either<
@@ -191,6 +199,23 @@ export class RunAutoBattleUseCase {
 
     const result = runBattleEngine(combatants, skillsMap, maxTurns)
 
+    const participants: Record<string, ParticipantInfo> = {}
+    for (const combatant of combatants) {
+      const char = characters.find(
+        (c) => c.id.toString() === combatant.characterId
+      )!
+      participants[combatant.characterId] = {
+        name: char.name,
+        teamNumber: combatant.teamNumber,
+        maxHp: combatant.maxHp,
+      }
+    }
+
+    const skillNames: Record<string, string> = {}
+    for (const skill of Object.values(skillsMap)) {
+      skillNames[skill.id.toString()] = skill.name
+    }
+
     const serializedLog = result.log.map((turn) => JSON.stringify(turn))
 
     const battle = Battle.create({
@@ -230,7 +255,9 @@ export class RunAutoBattleUseCase {
       battleId: battle.id.toString(),
       winnerTeam: result.winnerTeam,
       totalTurns: result.totalTurns,
-      log: serializedLog,
+      participants,
+      skills: skillNames,
+      log: result.log,
     })
   }
 }

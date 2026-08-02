@@ -93,6 +93,14 @@ function selectSkill(
   return skillsMap[chosen] ?? null
 }
 
+function buildHpSnapshot(combatants: CombatantState[]): Record<string, number> {
+  const snapshot: Record<string, number> = {}
+  for (const c of combatants) {
+    snapshot[c.characterId] = c.currentHp
+  }
+  return snapshot
+}
+
 function checkWinner(combatants: CombatantState[]): 1 | 2 | null | 'ongoing' {
   const team1Alive = combatants.some((c) => c.teamNumber === 1 && c.isAlive)
   const team2Alive = combatants.some((c) => c.teamNumber === 2 && c.isAlive)
@@ -110,7 +118,7 @@ export function runBattleEngine(
   const log: TurnLog[] = []
 
   for (let turn = 1; turn <= maxTurns; turn++) {
-    const turnLog: TurnLog = { turn, actions: [] }
+    const turnLog: TurnLog = { turn, actions: [], hpSnapshot: {} }
 
     const order = combatants
       .filter((c) => c.isAlive)
@@ -206,11 +214,13 @@ export function runBattleEngine(
 
       const mid = checkWinner(combatants)
       if (mid !== 'ongoing') {
+        turnLog.hpSnapshot = buildHpSnapshot(combatants)
         log.push(turnLog)
         return { winnerTeam: mid, totalTurns: turn, log }
       }
     }
 
+    turnLog.hpSnapshot = buildHpSnapshot(combatants)
     log.push(turnLog)
 
     const end = checkWinner(combatants)

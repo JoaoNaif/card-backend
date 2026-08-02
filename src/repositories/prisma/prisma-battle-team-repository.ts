@@ -33,4 +33,9 @@ export class PrismaBattleTeamRepository implements IBattleTeamRepository {
     const data = await prisma.battleTeam.findMany({ where: { userId } })
     return data.map(PrismaBattleTeamMapper.toDomain)
   }
+
+  async findManyByBattleId(battleId: string): Promise<BattleTeam[]> {
+    const data = await prisma.battleTeam.findMany({ where: { battleId } })
+    return data.map(PrismaBattleTeamMapper.toDomain)
+  }
 }

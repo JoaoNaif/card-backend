@@ -36,6 +36,7 @@ export interface ActionLog {
 export interface TurnLog {
   turn: number
   actions: ActionLog[]
+  hpSnapshot: Record<string, number>
 }
 
 export interface BattleResult {

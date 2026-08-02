@@ -10,15 +10,15 @@ const teamMemberSchema = z.object({
 })
 
 const teamSchema = z.object({
-  userId: z.string().optional(),
+  userId: z.string().optional().nullable(),
   members: z.array(teamMemberSchema).min(1).max(4),
 })
 
 const runAutoBattleBodySchema = z.object({
   team1: teamSchema,
   team2: teamSchema,
-  battleFieldId: z.string().optional(),
-  maxTurns: z.number().int().positive().optional(),
+  battleFieldId: z.string().optional().nullable(),
+  maxTurns: z.number().int().positive().optional().nullable(),
 })
 
 const validateBody = zodValidationPipe(runAutoBattleBodySchema)

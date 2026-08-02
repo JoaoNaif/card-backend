@@ -6,4 +6,5 @@ export interface IBattleTeamRepository {
   delete(battleTeam: BattleTeam): Promise<void>
   findById(id: string): Promise<BattleTeam | null>
   findManyByUserId(userId: string): Promise<BattleTeam[]>
+  findManyByBattleId(battleId: string): Promise<BattleTeam[]>
 }

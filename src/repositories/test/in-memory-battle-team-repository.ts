@@ -26,4 +26,8 @@ export class InMemoryBattleTeamRepository implements IBattleTeamRepository {
   async findManyByUserId(userId: string): Promise<BattleTeam[]> {
     return this.items.filter((t) => t.userId === userId)
   }
+
+  async findManyByBattleId(battleId: string): Promise<BattleTeam[]> {
+    return this.items.filter((t) => t.battleId === battleId)
+  }
 }

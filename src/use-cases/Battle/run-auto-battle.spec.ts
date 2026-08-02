@@ -95,6 +95,16 @@ describe('RunAutoBattleUseCase', () => {
       expect(result.value.totalTurns).toBeGreaterThan(0)
       expect(result.value.log.length).toBeGreaterThan(0)
       expect(result.value.battleId).toBeDefined()
+
+      expect(result.value.participants[charA1.id.toString()]).toEqual({
+        name: charA1.name,
+        teamNumber: 1,
+        maxHp: charA1.effectiveHp,
+      })
+      expect(result.value.skills[attackSkill.id.toString()]).toBe(
+        attackSkill.name
+      )
+      expect(result.value.log[0]!.hpSnapshot[charB1.id.toString()]).toBe(0)
     }
 
     expect(battleRepository.items).toHaveLength(1)
@@ -273,10 +283,10 @@ describe('RunAutoBattleUseCase', () => {
 
     expect(result.isRight()).toBe(true)
     if (result.isRight()) {
-      const firstTurn = JSON.parse(result.value.log[0]!)
-      const action = firstTurn.actions[0]
+      const firstTurn = result.value.log[0]!
+      const action = firstTurn.actions[0]!
       // -round(10 * 1.25) = -13
-      expect(action.selfDebuff.value).toBe(-13)
+      expect(action.selfDebuff?.value).toBe(-13)
     }
   })
 
@@ -327,8 +337,8 @@ describe('RunAutoBattleUseCase', () => {
 
     expect(result.isRight()).toBe(true)
     if (result.isRight()) {
-      const firstTurn = JSON.parse(result.value.log[0]!)
-      const action = firstTurn.actions[0]
+      const firstTurn = result.value.log[0]!
+      const action = firstTurn.actions[0]!
       // base ATK 10 boosted +100% by the field's "Fire" modifier -> effective ATK 20
       // targetDef 0 -> calcDamage(20, 0) = 20
       expect(action.damage).toBe(20)
@@ -382,8 +392,8 @@ describe('RunAutoBattleUseCase', () => {
 
     expect(result.isRight()).toBe(true)
     if (result.isRight()) {
-      const firstTurn = JSON.parse(result.value.log[0]!)
-      const action = firstTurn.actions[0]
+      const firstTurn = result.value.log[0]!
+      const action = firstTurn.actions[0]!
       // trait doesn't match the field modifier -> ATK stays at base 10
       expect(action.damage).toBe(10)
     }
