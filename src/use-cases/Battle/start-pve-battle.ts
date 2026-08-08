@@ -128,6 +128,9 @@ export class StartPveBattleUseCase {
         return {
           ...buildCombatantState(char, member, skills, battleField, teamNumber),
           controlledBy,
+          ...(controlledBy === 'AI'
+            ? { aiDifficulty: machine.difficulty, aiPersonality: machine.personality }
+            : {}),
         }
       })
 

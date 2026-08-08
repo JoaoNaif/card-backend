@@ -1,5 +1,5 @@
 import { UniqueEntityId } from '../../../core/entities/unique-entity-id'
-import { Machine } from '../../../entities/machine'
+import { AiDifficulty, AiPersonality, Machine } from '../../../entities/machine'
 import type { Machine as MachinePrisma } from '../../../generated/prisma'
 
 export class PrismaMachineMapper {
@@ -8,6 +8,8 @@ export class PrismaMachineMapper {
       {
         label: data.label,
         name: data.name,
+        difficulty: data.difficulty as AiDifficulty,
+        personality: data.personality as AiPersonality,
         createdAt: data.createdAt,
       },
       new UniqueEntityId(data.id)
@@ -19,6 +21,8 @@ export class PrismaMachineMapper {
       id: machine.id.toString(),
       label: machine.label,
       name: machine.name,
+      difficulty: machine.difficulty,
+      personality: machine.personality,
       createdAt: machine.createdAt,
     }
   }

@@ -2,7 +2,7 @@ import { left, right, type Either } from '../../core/either'
 import { ResourceAlreadyExistError } from '../../core/error/err/resource-already-exist-error'
 import { ResourceNotFoundError } from '../../core/error/err/not-found-error'
 import { UnauthorizedError } from '../../core/error/err/unauthorized-error'
-import { Machine } from '../../entities/machine'
+import { AiDifficulty, AiPersonality, Machine } from '../../entities/machine'
 import { MachineMember } from '../../entities/machine-member'
 import type { ICharacterRepository } from '../../repositories/interface/character-repository'
 import type { IMachineMemberRepository } from '../../repositories/interface/machine-member-repository'
@@ -16,6 +16,8 @@ interface CreateMachineUseCaseRequest {
   userId: string
   label: string
   name: string
+  difficulty?: AiDifficulty
+  personality?: AiPersonality
   members: TeamMemberInput[]
 }
 
@@ -39,6 +41,8 @@ export class CreateMachineUseCase {
     userId,
     label,
     name,
+    difficulty,
+    personality,
     members,
   }: CreateMachineUseCaseRequest): Promise<CreateMachineUseCaseResponse> {
     const user = await this.userRepository.findById(userId)
@@ -62,7 +66,12 @@ export class CreateMachineUseCase {
       }
     }
 
-    const machine = Machine.create({ label, name })
+    const machine = Machine.create({
+      label,
+      name,
+      ...(difficulty !== undefined ? { difficulty } : {}),
+      ...(personality !== undefined ? { personality } : {}),
+    })
     await this.machineRepository.create(machine)
 
     for (const member of members) {
@@ -80,6 +89,8 @@ export class CreateMachineUseCase {
         id: machine.id.toString(),
         label: machine.label,
         name: machine.name,
+        difficulty: machine.difficulty,
+        personality: machine.personality,
         members: members.map((m) => ({
           characterId: m.characterId,
           positionRow: m.positionRow,

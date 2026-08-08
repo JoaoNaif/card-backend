@@ -1,6 +1,7 @@
 import z from 'zod'
 import type { Request, Response } from 'express'
 import { zodValidationPipe } from '../_pipe/zod-validation-pipe'
+import { AiDifficulty, AiPersonality } from '../../entities/machine'
 import type { CreateMachineUseCase } from '../../use-cases/Battle/create-machine'
 
 const machineMemberSchema = z.object({
@@ -12,6 +13,12 @@ const machineMemberSchema = z.object({
 const createMachineBodySchema = z.object({
   label: z.string().min(1),
   name: z.string().min(1),
+  difficulty: z
+    .enum(Object.values(AiDifficulty) as [AiDifficulty, ...AiDifficulty[]])
+    .optional(),
+  personality: z
+    .enum(Object.values(AiPersonality) as [AiPersonality, ...AiPersonality[]])
+    .optional(),
   members: z.array(machineMemberSchema).min(1).max(4),
 })
 
@@ -24,12 +31,14 @@ export class CreateMachineController {
     validateBody,
     async (req: Request, res: Response) => {
       const userId = req.user!.sub
-      const { label, name, members } = req.body
+      const { label, name, difficulty, personality, members } = req.body
 
       const result = await this.createMachineUseCase.execute({
         userId,
         label,
         name,
+        difficulty,
+        personality,
         members,
       })
 

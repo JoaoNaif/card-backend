@@ -1,6 +1,8 @@
 import { left, right, type Either } from '../../../core/either'
+import { AiDifficulty, AiPersonality } from '../../../entities/machine'
 import { TargetType } from '../../../entities/skill'
 import { InvalidBattleActionError } from '../err/invalid-battle-action-error'
+import { decideAiAction } from './ai-decision'
 import {
   buildHpSnapshot,
   checkWinner,
@@ -8,7 +10,6 @@ import {
   computeTurnOrder,
   hasEligibleSkill,
   resolveAction,
-  selectSkill,
   tickCooldowns,
   tickEffects,
 } from './battle-engine'
@@ -18,6 +19,8 @@ export type ControlledBy = 'PLAYER' | 'AI'
 
 export interface PveCombatant extends CombatantState {
   controlledBy: ControlledBy
+  aiDifficulty?: AiDifficulty
+  aiPersonality?: AiPersonality
 }
 
 export interface PveSessionState {
@@ -121,9 +124,21 @@ function advanceUntilBlocked(state: PveSessionState): PveAdvanceResult {
     }
 
     if (actor.controlledBy === 'AI') {
-      const skillId = selectSkill(actor, state.skillsMap)!
-      const skill = state.skillsMap[skillId]!
-      const actionLog = resolveAction(actor, skillId, skill, state.combatants)
+      const decision = decideAiAction(
+        actor,
+        state.skillsMap,
+        state.combatants,
+        actor.aiDifficulty,
+        actor.aiPersonality
+      )!
+      const skill = state.skillsMap[decision.skillId]!
+      const actionLog = resolveAction(
+        actor,
+        decision.skillId,
+        skill,
+        state.combatants,
+        decision.targets
+      )
       state.currentRoundActions.push(actionLog)
       state.actedIds.push(nextId)
 

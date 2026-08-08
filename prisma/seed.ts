@@ -1,5 +1,7 @@
 import 'dotenv/config'
 import {
+  AiDifficulty,
+  AiPersonality,
   BonusType,
   Pillar,
   Ranking,
@@ -404,25 +406,56 @@ async function seed() {
     })
   }
 
+  // Mesmo roster reaproveitado nas 3 máquinas — o que muda entre elas é só
+  // difficulty/personality, pra deixar claro em teste que a diferença de dificuldade
+  // vem da IA (ai-decision.ts), não de personagens mais fortes.
+  const machineMembers = machineM1Characters.map((c) => ({
+    characterId: c.id,
+    positionRow: c.positionRow,
+    positionCol: c.positionCol,
+  }))
+
   const machineM1 = await prisma.machine.create({
     data: {
       label: 'M1',
       name: 'Sentinelas de Treino',
-      members: {
-        create: machineM1Characters.map((c) => ({
-          characterId: c.id,
-          positionRow: c.positionRow,
-          positionCol: c.positionCol,
-        })),
-      },
+      difficulty: AiDifficulty.INICIANTE,
+      personality: AiPersonality.EQUILIBRADO,
+      members: { create: machineMembers },
     },
   })
+
+  const machineM2 = await prisma.machine.create({
+    data: {
+      label: 'M2',
+      name: 'Sentinelas Táticas',
+      difficulty: AiDifficulty.INTERMEDIARIO,
+      personality: AiPersonality.MODERADO,
+      members: { create: machineMembers },
+    },
+  })
+
+  const machineM3 = await prisma.machine.create({
+    data: {
+      label: 'M3',
+      name: 'Sentinelas de Elite',
+      difficulty: AiDifficulty.AVANCADO,
+      personality: AiPersonality.OUSADO,
+      members: { create: machineMembers },
+    },
+  })
+
+  const machines = [machineM1, machineM2, machineM3]
 
   console.log('Seed concluído:')
   console.log(`  Usuário demo (ADMIN): ${DEMO_USER_EMAIL} / ${DEMO_USER_PASSWORD}`)
   console.log(`  ${characters.length} personagens no roster (userId: ${user.id})`)
   console.log(`  Campo de batalha: "${volcano.name}" (com modificadores de trait)`)
-  console.log(`  Máquina "${machineM1.label}": ${machineM1Characters.length} personagens para GET /battle/machines/${machineM1.label}`)
+  for (const machine of machines) {
+    console.log(
+      `  Máquina "${machine.label}" (${machine.difficulty}/${machine.personality}): GET /battle/machines/${machine.label}`
+    )
+  }
 }
 
 seed()

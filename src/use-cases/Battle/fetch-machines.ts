@@ -86,6 +86,8 @@ export class FetchMachinesUseCase {
         id: machine.id.toString(),
         label: machine.label,
         name: machine.name,
+        difficulty: machine.difficulty,
+        personality: machine.personality,
         members: memberDtos,
       })
     }

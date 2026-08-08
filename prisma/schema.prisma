@@ -275,12 +275,27 @@ model TeamMember {
   @@unique([teamId, characterId])
 }
 
+enum AiDifficulty {
+  INICIANTE
+  INTERMEDIARIO
+  AVANCADO
+  ESPECIALISTA
+}
+
+enum AiPersonality {
+  EQUILIBRADO
+  MODERADO
+  OUSADO
+}
+
 model Machine {
-  id        String          @id @default(cuid())
-  label     String          @unique
-  name      String
-  members   MachineMember[]
-  createdAt DateTime        @default(now())
+  id          String          @id @default(cuid())
+  label       String          @unique
+  name        String
+  difficulty  AiDifficulty    @default(INICIANTE)
+  personality AiPersonality   @default(EQUILIBRADO)
+  members     MachineMember[]
+  createdAt   DateTime        @default(now())
 }
 
 model MachineMember {
