@@ -1,13 +1,15 @@
 import { PrismaCharacterRepository } from '../../../repositories/prisma/prisma-character-repository'
+import { CachedCharacterRepository } from '../../../repositories/redis/cached-character-repository'
 import { PrismaPowerRepository } from '../../../repositories/prisma/prisma-power-repository'
+import { CachedPowerRepository } from '../../../repositories/redis/cached-power-repository'
 import { PrismaUserRepository } from '../../../repositories/prisma/prisma-user-repository'
 import { CreateCharacterUseCase } from '../../../use-cases/Character/create-character'
 import { CreateCharacterController } from '../create-character.controller'
 
 export function makeCreateCharacterController(): CreateCharacterController {
-  const characterRepository = new PrismaCharacterRepository()
+  const characterRepository = new CachedCharacterRepository(new PrismaCharacterRepository())
   const userRepository = new PrismaUserRepository()
-  const powerRepository = new PrismaPowerRepository()
+  const powerRepository = new CachedPowerRepository(new PrismaPowerRepository())
   const createCharacterUseCase = new CreateCharacterUseCase(
     characterRepository,
     userRepository,

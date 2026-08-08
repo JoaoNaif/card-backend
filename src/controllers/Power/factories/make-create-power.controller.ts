@@ -1,10 +1,11 @@
 import { PrismaPowerRepository } from '../../../repositories/prisma/prisma-power-repository'
+import { CachedPowerRepository } from '../../../repositories/redis/cached-power-repository'
 import { PrismaUserRepository } from '../../../repositories/prisma/prisma-user-repository'
 import { CreatePowerUseCase } from '../../../use-cases/Power/create-power'
 import { CreatePowerController } from '../create-power.controller'
 
 export function makeCreatePowerController(): CreatePowerController {
-  const powerRepository = new PrismaPowerRepository()
+  const powerRepository = new CachedPowerRepository(new PrismaPowerRepository())
   const userRepository = new PrismaUserRepository()
   const createPowerUseCase = new CreatePowerUseCase(
     powerRepository,

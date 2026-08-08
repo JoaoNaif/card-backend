@@ -24,4 +24,8 @@ export abstract class Entity<Props> {
 
     return false
   }
+
+  public toJSON(): { id: string; props: Props } {
+    return { id: this._id.toString(), props: this.props }
+  }
 }

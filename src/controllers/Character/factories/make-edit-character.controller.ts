@@ -1,10 +1,11 @@
 import { PrismaCharacterRepository } from '../../../repositories/prisma/prisma-character-repository'
+import { CachedCharacterRepository } from '../../../repositories/redis/cached-character-repository'
 import { PrismaUserRepository } from '../../../repositories/prisma/prisma-user-repository'
 import { EditCharacterUseCase } from '../../../use-cases/Character/edit-character'
 import { EditCharacterController } from '../edit-character.controller'
 
 export function makeEditCharacterController(): EditCharacterController {
-  const characterRepository = new PrismaCharacterRepository()
+  const characterRepository = new CachedCharacterRepository(new PrismaCharacterRepository())
   const userRepository = new PrismaUserRepository()
   const editCharacterUseCase = new EditCharacterUseCase(
     userRepository,
