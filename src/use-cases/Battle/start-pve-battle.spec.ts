@@ -11,6 +11,7 @@ import { InMemoryBattleTeamRepository } from '../../repositories/test/in-memory-
 import { InMemoryCharacterRepository } from '../../repositories/test/in-memory-character-repository'
 import { InMemoryMachineMemberRepository } from '../../repositories/test/in-memory-machine-member-repository'
 import { InMemoryMachineRepository } from '../../repositories/test/in-memory-machine-repository'
+import { InMemoryPveSessionRepository } from '../../repositories/test/in-memory-pve-session-repository'
 import { InMemorySkillRepository } from '../../repositories/test/in-memory-skill-repository'
 import { makeBattleField } from '../../repositories/test/factories/make-battle-field'
 import { makeCharacter } from '../../repositories/test/factories/make-character'
@@ -26,6 +27,7 @@ let skillRepository: InMemorySkillRepository
 let battleFieldRepository: InMemoryBattleFieldRepository
 let machineRepository: InMemoryMachineRepository
 let machineMemberRepository: InMemoryMachineMemberRepository
+let pveSessionRepository: InMemoryPveSessionRepository
 let sut: StartPveBattleUseCase
 
 describe('StartPveBattleUseCase', () => {
@@ -38,6 +40,7 @@ describe('StartPveBattleUseCase', () => {
     battleFieldRepository = new InMemoryBattleFieldRepository()
     machineRepository = new InMemoryMachineRepository()
     machineMemberRepository = new InMemoryMachineMemberRepository()
+    pveSessionRepository = new InMemoryPveSessionRepository()
     sut = new StartPveBattleUseCase(
       battleRepository,
       battleTeamRepository,
@@ -46,7 +49,8 @@ describe('StartPveBattleUseCase', () => {
       skillRepository,
       battleFieldRepository,
       machineRepository,
-      machineMemberRepository
+      machineMemberRepository,
+      pveSessionRepository
     )
   })
 
@@ -143,7 +147,9 @@ describe('StartPveBattleUseCase', () => {
     expect(battleRepository.items).toHaveLength(1)
     expect(battleRepository.items[0]?.mode).toBe('PVE')
     expect(battleRepository.items[0]?.status).toBe('ACTIVE')
-    expect(battleRepository.items[0]?.sessionState).not.toBeNull()
+    expect(
+      pveSessionRepository.items.get(battleRepository.items[0]!.id.toString())
+    ).toBeDefined()
 
     expect(battleTeamRepository.items).toHaveLength(2)
     const playerTeam = battleTeamRepository.items.find((t) => t.teamNumber === 1)

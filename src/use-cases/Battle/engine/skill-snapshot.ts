@@ -5,7 +5,7 @@ import type { SkillLike } from './types'
  * Converts a `Skill` entity into a plain, JSON-round-trip-safe object. Entity getters live on
  * the prototype, not as own properties, so `JSON.stringify(skillEntity)` would serialize its
  * internal `props`/`_id` instead of a flat `{ damageMultiplier, ... }` shape — this snapshot is
- * what actually gets stored in `Battle.sessionState` between PvE requests.
+ * what actually gets stored in the Redis-backed PvE session between requests.
  */
 export function toSkillSnapshot(skill: Skill): SkillLike {
   return {

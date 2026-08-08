@@ -6,6 +6,7 @@ import { PrismaCharacterRepository } from '../../../repositories/prisma/prisma-c
 import { PrismaMachineMemberRepository } from '../../../repositories/prisma/prisma-machine-member-repository'
 import { PrismaMachineRepository } from '../../../repositories/prisma/prisma-machine-repository'
 import { PrismaSkillRepository } from '../../../repositories/prisma/prisma-skill-repository'
+import { RedisPveSessionRepository } from '../../../repositories/redis/redis-pve-session-repository'
 import { StartPveBattleUseCase } from '../../../use-cases/Battle/start-pve-battle'
 import { StartPveBattleController } from '../start-pve-battle.controller'
 
@@ -18,6 +19,7 @@ export function makeStartPveBattleController(): StartPveBattleController {
   const battleFieldRepository = new PrismaBattleFieldRepository()
   const machineRepository = new PrismaMachineRepository()
   const machineMemberRepository = new PrismaMachineMemberRepository()
+  const pveSessionRepository = new RedisPveSessionRepository()
 
   const useCase = new StartPveBattleUseCase(
     battleRepository,
@@ -27,7 +29,8 @@ export function makeStartPveBattleController(): StartPveBattleController {
     skillRepository,
     battleFieldRepository,
     machineRepository,
-    machineMemberRepository
+    machineMemberRepository,
+    pveSessionRepository
   )
 
   return new StartPveBattleController(useCase)

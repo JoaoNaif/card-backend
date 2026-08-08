@@ -8,7 +8,6 @@ export interface DtoBattleRaw {
   totalTurns?: number | null | undefined
   maxTurns?: number | null | undefined
   log: string[]
-  sessionState?: string[] | null | undefined
   createdAt: Date
   updatedAt: Date
 }

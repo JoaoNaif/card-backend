@@ -22,7 +22,6 @@ export interface BattleProps {
   totalTurns: number
   maxTurns?: number | null | undefined
   log: string[]
-  sessionState?: string[] | null | undefined
   createdAt: Date
   updatedAt: Date
 }
@@ -70,14 +69,6 @@ export class Battle extends Entity<BattleProps> {
 
   set log(log: string[]) {
     this.props.log = log
-  }
-
-  get sessionState() {
-    return this.props.sessionState
-  }
-
-  set sessionState(sessionState: string[] | null | undefined) {
-    this.props.sessionState = sessionState
   }
 
   get createdAt() {

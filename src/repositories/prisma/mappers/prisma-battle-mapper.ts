@@ -4,7 +4,6 @@ import {
   type BattleStatus,
   type BattleMode,
 } from '../../../entities/battle'
-import { Prisma } from '../../../generated/prisma'
 import type { Battle as BattlePrisma } from '../../../generated/prisma'
 
 export class PrismaBattleMapper {
@@ -16,7 +15,6 @@ export class PrismaBattleMapper {
         status: battle.status as BattleStatus,
         log: battle.log as string[],
         maxTurns: battle.maxTurns,
-        sessionState: battle.sessionState as string[] | null,
         totalTurns: battle.totalTurns,
         winnerTerm: battle.winnerTeam,
         updatedAt: battle.updatedAt,
@@ -36,7 +34,6 @@ export class PrismaBattleMapper {
       totalTurns: battle.totalTurns,
       maxTurns: battle.maxTurns ?? null,
       log: battle.log,
-      sessionState: battle.sessionState ?? Prisma.DbNull,
       createdAt: battle.createdAt,
       updatedAt: battle.updatedAt,
     }
@@ -51,7 +48,6 @@ export class PrismaBattleMapper {
       totalTurns: battle.totalTurns,
       maxTurns: battle.maxTurns ?? null,
       log: battle.log,
-      sessionState: battle.sessionState ?? Prisma.DbNull,
       createdAt: battle.createdAt,
       updatedAt: battle.updatedAt,
     }

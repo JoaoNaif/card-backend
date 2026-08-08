@@ -11,6 +11,7 @@ import type { IBattleTeamRepository } from '../../repositories/interface/battle-
 import type { ICharacterRepository } from '../../repositories/interface/character-repository'
 import type { IMachineMemberRepository } from '../../repositories/interface/machine-member-repository'
 import type { IMachineRepository } from '../../repositories/interface/machine-repository'
+import type { IPveSessionRepository } from '../../repositories/interface/pve-session-repository'
 import type { ISkillRepository } from '../../repositories/interface/skill-repository'
 import { DEFAULT_MAX_TURNS } from './engine/battle-engine'
 import { buildCombatantState } from './engine/build-combatant'
@@ -55,7 +56,8 @@ export class StartPveBattleUseCase {
     private skillRepository: ISkillRepository,
     private battleFieldRepository: IBattleFieldRepository,
     private machineRepository: IMachineRepository,
-    private machineMemberRepository: IMachineMemberRepository
+    private machineMemberRepository: IMachineMemberRepository,
+    private pveSessionRepository: IPveSessionRepository
   ) {}
 
   async execute({
@@ -153,9 +155,12 @@ export class StartPveBattleUseCase {
       totalTurns: completedRounds.length,
       maxTurns: maxTurns ?? null,
       log: completedRounds.map((round) => JSON.stringify(round)),
-      sessionState: state.status === 'FINISHED' ? null : [JSON.stringify(state)],
     })
     await this.battleRepository.create(battle)
+
+    if (state.status !== 'FINISHED') {
+      await this.pveSessionRepository.save(battle.id.toString(), state)
+    }
 
     const teamInputs: { teamNumber: 1 | 2; userId: string | null; members: TeamMemberInput[] }[] = [
       { teamNumber: 1, userId, members: playerTeam },

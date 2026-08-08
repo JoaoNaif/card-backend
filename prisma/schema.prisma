@@ -158,7 +158,6 @@ model Battle {
   totalTurns    Int          @default(0)
   maxTurns      Int?
   log           Json         @default("[]")
-  sessionState  Json?
   teams         BattleTeam[]
   battleField   BattleField  @relation(fields: [battleFieldId], references: [id])
   createdAt     DateTime     @default(now())

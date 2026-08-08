@@ -11,6 +11,7 @@ import { InMemoryBattleTeamRepository } from '../../repositories/test/in-memory-
 import { InMemoryCharacterRepository } from '../../repositories/test/in-memory-character-repository'
 import { InMemoryMachineMemberRepository } from '../../repositories/test/in-memory-machine-member-repository'
 import { InMemoryMachineRepository } from '../../repositories/test/in-memory-machine-repository'
+import { InMemoryPveSessionRepository } from '../../repositories/test/in-memory-pve-session-repository'
 import { InMemorySkillRepository } from '../../repositories/test/in-memory-skill-repository'
 import { makeBattleField } from '../../repositories/test/factories/make-battle-field'
 import { makeCharacter } from '../../repositories/test/factories/make-character'
@@ -27,6 +28,7 @@ let skillRepository: InMemorySkillRepository
 let battleFieldRepository: InMemoryBattleFieldRepository
 let machineRepository: InMemoryMachineRepository
 let machineMemberRepository: InMemoryMachineMemberRepository
+let pveSessionRepository: InMemoryPveSessionRepository
 let startUseCase: StartPveBattleUseCase
 let sut: SubmitPveActionUseCase
 
@@ -40,6 +42,7 @@ describe('SubmitPveActionUseCase', () => {
     battleFieldRepository = new InMemoryBattleFieldRepository()
     machineRepository = new InMemoryMachineRepository()
     machineMemberRepository = new InMemoryMachineMemberRepository()
+    pveSessionRepository = new InMemoryPveSessionRepository()
     startUseCase = new StartPveBattleUseCase(
       battleRepository,
       battleTeamRepository,
@@ -48,12 +51,14 @@ describe('SubmitPveActionUseCase', () => {
       skillRepository,
       battleFieldRepository,
       machineRepository,
-      machineMemberRepository
+      machineMemberRepository,
+      pveSessionRepository
     )
     sut = new SubmitPveActionUseCase(
       battleRepository,
       battleTeamRepository,
-      battleFieldRepository
+      battleFieldRepository,
+      pveSessionRepository
     )
   })
 
@@ -157,7 +162,7 @@ describe('SubmitPveActionUseCase', () => {
 
     const persisted = await battleRepository.findById(battleId)
     expect(persisted?.status).toBe('ACTIVE')
-    expect(persisted?.sessionState).not.toBeNull()
+    expect(pveSessionRepository.items.get(battleId)).toBeDefined()
   })
 
   it('returns ResourceNotFoundError when the battle does not exist', async () => {
@@ -223,7 +228,7 @@ describe('SubmitPveActionUseCase', () => {
     const persisted = await battleRepository.findById(battleId)
     expect(persisted?.status).toBe('COMPLETED')
     expect(persisted?.winnerTerm).toBe(1)
-    expect(persisted?.sessionState).toBeNull()
+    expect(pveSessionRepository.items.get(battleId)).toBeUndefined()
 
     const again = await sut.execute({
       userId: 'user-1',

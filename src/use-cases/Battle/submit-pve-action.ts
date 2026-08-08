@@ -5,10 +5,8 @@ import { BattleMode, BattleStatus } from '../../entities/battle'
 import type { IBattleFieldRepository } from '../../repositories/interface/battle-field-repository'
 import type { IBattleRepository } from '../../repositories/interface/battle-repository'
 import type { IBattleTeamRepository } from '../../repositories/interface/battle-team-repository'
-import {
-  submitPlayerAction,
-  type PveSessionState,
-} from './engine/pve-engine'
+import type { IPveSessionRepository } from '../../repositories/interface/pve-session-repository'
+import { submitPlayerAction } from './engine/pve-engine'
 import {
   buildSkillNames,
   buildStateDto,
@@ -42,7 +40,8 @@ export class SubmitPveActionUseCase {
   constructor(
     private battleRepository: IBattleRepository,
     private battleTeamRepository: IBattleTeamRepository,
-    private battleFieldRepository: IBattleFieldRepository
+    private battleFieldRepository: IBattleFieldRepository,
+    private pveSessionRepository: IPveSessionRepository
   ) {}
 
   async execute({
@@ -68,14 +67,13 @@ export class SubmitPveActionUseCase {
       return left(new UnauthorizedError())
     }
 
-    if (!battle.sessionState || battle.sessionState.length === 0) {
+    const state = await this.pveSessionRepository.find(battleId)
+    if (!state) {
       return left(new InvalidBattleActionError('Battle session state is missing.'))
     }
 
     const battleField = await this.battleFieldRepository.findById(battle.battleFieldId)
     if (!battleField) return left(new ResourceNotFoundError('Battle Field'))
-
-    const state = JSON.parse(battle.sessionState[0]!) as PveSessionState
 
     const result = submitPlayerAction(state, {
       characterId,
@@ -91,13 +89,18 @@ export class SubmitPveActionUseCase {
       ...completedRounds.map((round) => JSON.stringify(round)),
     ]
     battle.totalTurns = battle.totalTurns + completedRounds.length
-    battle.sessionState = newState.status === 'FINISHED' ? null : [JSON.stringify(newState)]
     battle.status =
       newState.status === 'FINISHED' ? BattleStatus.COMPLETED : BattleStatus.ACTIVE
     battle.winnerTerm = newState.winnerTeam
     battle.updatedAt = new Date()
 
     await this.battleRepository.save(battle)
+
+    if (newState.status === 'FINISHED') {
+      await this.pveSessionRepository.delete(battleId)
+    } else {
+      await this.pveSessionRepository.save(battleId, newState)
+    }
 
     return right({
       battleId: battle.id.toString(),
